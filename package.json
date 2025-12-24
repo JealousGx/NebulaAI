@@ -44,6 +44,7 @@
     "drizzle-kit": "^0.30.0",
     "drizzle-orm": "^0.39.0",
     "lucide-react": "^0.544.0",
+    "motion": "^12.23.26",
     "mysql2": "^3.6.0",
     "nitro": "latest",
     "react": "^19.2.0",
@@ -72,5 +73,11 @@
     "vite": "^7.1.7",
     "vitest": "^3.0.5",
     "web-vitals": "^5.1.0"
+  },
+  "overrides": {
+    "motion": {
+      "react": "^19.2.0",
+      "react-dom": "^19.2.0"
+    }
   }
 }
