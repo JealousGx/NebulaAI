@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 
+import { Logo } from "@/components/common/logo";
 import { Link } from "@/components/ui/link";
 
 export function GlassNav() {
@@ -16,9 +17,7 @@ export function GlassNav() {
 					transition={{ delay: 0.2 }}
 					className="flex items-center gap-2"
 				>
-					<div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-						<span className="text-primary-foreground">N</span>
-					</div>
+					<Logo className="w-8 h-8" />
 					<span className="text-lg">Nebula AI</span>
 				</motion.div>
 
