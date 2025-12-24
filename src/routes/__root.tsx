@@ -11,7 +11,7 @@ import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import type { TRPCRouter } from "@/integrations/trpc/router";
 import { AppProviders } from "@/providers";
-
+import { seo } from "@/utils/seo";
 import appCss from "../styles.css?url";
 
 interface MyRouterContext {
@@ -33,12 +33,40 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{
 				title: "Nebula AI",
 			},
+			...seo({
+				title:
+					"Nebula AI - Control & Manage All 3rd Party AI Models from One Place",
+				description:
+					"Nebula AI is a developer-centric dashboard that acts as a secure, intelligent proxy and management layer for all your third-party AI model APIs.",
+				image: "/og-image.png",
+			}),
+			{ name: "apple-mobile-web-app-title", content: "Nebula AI" },
 		],
 		links: [
 			{
 				rel: "stylesheet",
 				href: appCss,
 			},
+			{
+				rel: "icon",
+				type: "image/png",
+				href: "/favicon-16x16.png",
+				sizes: "16x16",
+			},
+			{
+				rel: "icon",
+				type: "image/png",
+				href: "/favicon-32x32.png",
+				sizes: "32x32",
+			},
+			{ rel: "icon", type: "image/svg+xml", href: "/logo/logo.svg" },
+			{ rel: "shortcut icon", href: "/favicon.ico" },
+			{
+				rel: "apple-touch-icon",
+				href: "/apple-touch-icon.png",
+				sizes: "180x180",
+			},
+			{ rel: "manifest", href: "/manifest.json" },
 		],
 	}),
 
@@ -47,7 +75,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
