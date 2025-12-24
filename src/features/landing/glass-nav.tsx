@@ -7,9 +7,9 @@ export function GlassNav() {
 		<motion.nav
 			initial={{ y: -100 }}
 			animate={{ y: 0 }}
-			className="fixed top-0 left-0 right-0 z-50 glass mx-4 mt-4 rounded-lg"
+			className="container fixed top-0 left-0 right-0 z-50 glass mx-auto mt-4 rounded-lg"
 		>
-			<div className="container mx-auto px-6 py-4 flex items-center justify-between">
+			<div className="px-6 py-4 flex items-center justify-between">
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
