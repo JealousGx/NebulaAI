@@ -8,6 +8,8 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
+import { Toaster } from "@/components/ui/sonner";
+
 import { VortexBackground } from "@/features/vortex-background";
 
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
@@ -100,6 +102,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 							TanStackQueryDevtools,
 						]}
 					/>
+					<Toaster richColors />
 				</AppProviders>
 				<Scripts />
 			</body>
