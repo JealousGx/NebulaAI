@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 import { cn } from "@/lib/utils";
 
 import { Image } from "../image";
@@ -20,7 +22,7 @@ export function Logo({
 	const src = useWebp ? "/logo/logo.webp" : "/logo/logo.svg";
 
 	return (
-		<div className={cn("w-full h-full relative", className)}>
+		<Link to="/" className={cn("w-full h-full relative", className)}>
 			<Image
 				src={src}
 				alt={alt}
@@ -29,6 +31,6 @@ export function Logo({
 				objectFit={objectFit}
 				className="w-full h-full"
 			/>
-		</div>
+		</Link>
 	);
 }
