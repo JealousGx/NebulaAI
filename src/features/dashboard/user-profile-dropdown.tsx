@@ -14,7 +14,7 @@ import {
 export function UserProfileDropdown() {
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="focus:outline-none">
+			<DropdownMenuTrigger className="focus:outline-none w-full">
 				<div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
 					<Avatar className="h-8 w-8">
 						<AvatarImage src="https://github.com/shadcn.png" />
@@ -32,7 +32,7 @@ export function UserProfileDropdown() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				className="w-56 glass border-border"
-				side="right"
+				side="top"
 				align="end"
 			>
 				<DropdownMenuLabel>My Account</DropdownMenuLabel>
