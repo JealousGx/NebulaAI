@@ -41,7 +41,6 @@ export function Image({
 						`object-${objectFit}`,
 					)}
 					onLoad={(e) => {
-						console.log("image loaded:", src);
 						setIsLoading(false);
 						onLoad?.(e);
 					}}
