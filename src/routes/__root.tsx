@@ -8,8 +8,11 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
+import { VortexBackground } from "@/features/vortex-background";
+
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import type { TRPCRouter } from "@/integrations/trpc/router";
+
 import { AppProviders } from "@/providers";
 
 import { seo } from "@/utils/seo";
@@ -83,6 +86,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<AppProviders>
+					<VortexBackground />
 					{children}
 					<TanStackDevtools
 						config={{
