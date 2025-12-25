@@ -11,7 +11,9 @@ import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
 import type { TRPCRouter } from "@/integrations/trpc/router";
 import { AppProviders } from "@/providers";
+
 import { seo } from "@/utils/seo";
+
 import appCss from "../styles.css?url";
 
 interface MyRouterContext {
