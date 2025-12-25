@@ -23,6 +23,17 @@ const navItems = [
 
 export function DashboardSidebar() {
 	const [isMobileOpen, setIsMobileSidebarOpen] = useState(false);
+	const [isDesktop, setIsDesktop] = React.useState(false);
+
+	React.useEffect(() => {
+		const media = window.matchMedia("(min-width: 1024px)");
+		const update = () => setIsDesktop(media.matches);
+
+		update();
+		media.addEventListener("change", update);
+		return () => media.removeEventListener("change", update);
+	}, []);
+
 	const location = useRouterState({ select: (s) => s.location });
 
 	const activePage = location.pathname;
@@ -59,7 +70,7 @@ export function DashboardSidebar() {
 			<motion.aside
 				initial={{ x: -280 }}
 				animate={{
-					x: isMobileOpen || window.innerWidth >= 1024 ? 0 : -280,
+					x: isMobileOpen || isDesktop ? 0 : -280,
 				}}
 				transition={{ duration: 0.3, ease: "easeOut" }}
 				className="fixed left-0 top-0 h-screen w-[280px] glass border-r border-border p-6 z-50 lg:z-40 flex flex-col"
@@ -75,7 +86,7 @@ export function DashboardSidebar() {
 							key={item.id}
 							to={item.id}
 							className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-								activePage === item.id
+								activePage.startsWith(item.id)
 									? "bg-sidebar-accent text-sidebar-accent-foreground"
 									: "text-muted-foreground hover:text-foreground hover:bg-accent/50"
 							}`}
