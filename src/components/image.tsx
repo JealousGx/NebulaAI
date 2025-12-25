@@ -11,6 +11,14 @@ interface ImageProps {
 	objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
 }
 
+const objectFitClasses: Record<NonNullable<ImageProps["objectFit"]>, string> = {
+	contain: "object-contain",
+	cover: "object-cover",
+	fill: "object-fill",
+	none: "object-none",
+	"scale-down": "object-scale-down",
+};
+
 export function Image({
 	src,
 	sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
@@ -38,7 +46,7 @@ export function Image({
 					className={cn(
 						"transition-opacity duration-300",
 						isLoading ? "opacity-0" : "opacity-100",
-						`object-${objectFit}`,
+						`${objectFitClasses[objectFit]}`,
 					)}
 					onLoad={(e) => {
 						setIsLoading(false);
