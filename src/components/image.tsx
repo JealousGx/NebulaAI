@@ -7,25 +7,14 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface ImageProps {
-	src: string;
-	alt: string;
-	fill?: boolean;
-	sizes?: string;
-	priority?: boolean;
-	quality?: number;
-	className?: string;
 	fallbackSrc?: string;
 	objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
-	onLoad?: () => void;
 }
 
 export function Image({
 	src,
-	alt,
-	fill = false,
 	sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
 	priority = false,
-	quality = 80,
 	className,
 	objectFit = "cover",
 	onLoad,
@@ -44,20 +33,28 @@ export function Image({
 				<React.Fragment>
 					<UnpicImage
 						src={src}
-						alt={alt}
-						priority={priority}
+						{...props}
+						// priority={priority}
 						loading={priority ? "eager" : "lazy"}
 						className={cn(
 							"transition-opacity duration-300",
 							isLoading ? "opacity-0" : "opacity-100",
 							`object-${objectFit}`,
 						)}
-						onLoad={() => {
+						onLoadedData={(e) => {
+							console.log("image loaded: ", src);
 							setIsLoading(false);
-							onLoad?.();
+							onLoad?.(e);
 						}}
-						onError={() => setError(true)}
-						{...props}
+						// onLoad={(e) => {
+						// 	console.log("image loaded:", src);
+						// 	setIsLoading(false);
+						// 	onLoad?.(e);
+						// }}
+						onError={(err) => {
+							console.log(`error loading image: ${src}\n${err}`);
+							setError(true);
+						}}
 					/>
 
 					{isLoading && (

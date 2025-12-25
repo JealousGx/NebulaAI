@@ -1,5 +1,6 @@
-import { Image } from "@/components/image";
 import { cn } from "@/lib/utils";
+
+import { Image } from "../image";
 
 interface LogoProps {
 	className?: string;
@@ -23,7 +24,6 @@ export function Logo({
 			<Image
 				src={src}
 				alt={alt}
-				fill
 				layout="fullWidth"
 				priority={priority}
 				objectFit={objectFit}
