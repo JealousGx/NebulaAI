@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router"
 import {
 	Layers,
 	LayoutDashboard,
@@ -6,37 +6,37 @@ import {
 	Settings,
 	Terminal,
 	X,
-} from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import React, { useState } from "react";
+} from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
+import React, { useState } from "react"
 
-import { Logo } from "@/components/common/logo";
+import { Logo } from "@/components/common/logo"
 
-import { UserProfileDropdown } from "./user-profile-dropdown";
+import { UserProfileDropdown } from "./user-profile-dropdown"
 
 const navItems = [
 	{ icon: LayoutDashboard, label: "Dashboard", id: "/dashboard" },
 	{ icon: Layers, label: "Endpoints", id: "/dashboard/endpoints" },
 	{ icon: Terminal, label: "Live Logs", id: "/dashboard/logs" },
 	{ icon: Settings, label: "Settings", id: "/dashboard/settings" },
-];
+]
 
 export function DashboardSidebar() {
-	const [isMobileOpen, setIsMobileSidebarOpen] = useState(false);
-	const [isDesktop, setIsDesktop] = React.useState(false);
+	const [isMobileOpen, setIsMobileSidebarOpen] = useState(false)
+	const [isDesktop, setIsDesktop] = React.useState(false)
 
 	React.useEffect(() => {
-		const media = window.matchMedia("(min-width: 1024px)");
-		const update = () => setIsDesktop(media.matches);
+		const media = window.matchMedia("(min-width: 1024px)")
+		const update = () => setIsDesktop(media.matches)
 
-		update();
-		media.addEventListener("change", update);
-		return () => media.removeEventListener("change", update);
-	}, []);
+		update()
+		media.addEventListener("change", update)
+		return () => media.removeEventListener("change", update)
+	}, [])
 
-	const location = useRouterState({ select: (s) => s.location });
+	const location = useRouterState({ select: (s) => s.location })
 
-	const activePage = location.pathname;
+	const activePage = location.pathname
 
 	return (
 		<React.Fragment>
@@ -81,20 +81,23 @@ export function DashboardSidebar() {
 				</div>
 
 				<nav className="space-y-2">
-					{navItems.map((item) => (
-						<Link
-							key={item.id}
-							to={item.id}
-							className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-								activePage.startsWith(item.id)
-									? "bg-sidebar-accent text-sidebar-accent-foreground"
-									: "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-							}`}
-						>
-							<item.icon className="h-5 w-5" />
-							<span>{item.label}</span>
-						</Link>
-					))}
+					{navItems.map((item) => {
+						const isActive = normalize(activePage) === normalize(item.id)
+						return (
+							<Link
+								key={item.id}
+								to={item.id}
+								className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+									isActive
+										? "bg-sidebar-accent text-sidebar-accent-foreground"
+										: "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+								}`}
+							>
+								<item.icon className="h-5 w-5" />
+								<span>{item.label}</span>
+							</Link>
+						)
+					})}
 				</nav>
 
 				<div className="mt-auto space-y-4">
@@ -112,5 +115,7 @@ export function DashboardSidebar() {
 				</div>
 			</motion.aside>
 		</React.Fragment>
-	);
+	)
 }
+
+const normalize = (p: string) => (p === "/" ? "/" : p.replace(/\/$/, ""))
