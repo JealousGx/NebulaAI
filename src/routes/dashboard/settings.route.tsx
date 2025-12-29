@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Key, Settings, Zap } from "lucide-react"
+import { Key, Settings } from "lucide-react"
 import { motion } from "motion/react"
 
 import { Button } from "@/components/ui/button"
@@ -44,7 +44,7 @@ function RouteComponent() {
 							<TabsTrigger value="security">Security</TabsTrigger>
 							<TabsTrigger value="notifications">Notifications</TabsTrigger>
 							<TabsTrigger value="api">API Keys</TabsTrigger>
-							<TabsTrigger value="billing">Billing</TabsTrigger>
+							{/* <TabsTrigger value="billing">Billing</TabsTrigger> */}
 						</TabsList>
 
 						<TabsContent value="general">
@@ -299,7 +299,7 @@ function RouteComponent() {
 							</div>
 						</TabsContent>
 
-						<TabsContent value="billing">
+						{/* <TabsContent value="billing">
 							<div className="glass rounded-xl p-8">
 								<h2 className="text-xl mb-6">Billing & Usage</h2>
 
@@ -387,7 +387,7 @@ function RouteComponent() {
 									</Button>
 								</div>
 							</div>
-						</TabsContent>
+						</TabsContent> */}
 					</Tabs>
 				</motion.div>
 			</main>
