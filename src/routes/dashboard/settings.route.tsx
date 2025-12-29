@@ -150,20 +150,6 @@ function RouteComponent() {
 
 									<Separator className="bg-border" />
 
-									<div className="flex items-center justify-between">
-										<div className="space-y-1">
-											<Label>Two-Factor Authentication</Label>
-											<p className="text-sm text-muted-foreground">
-												Add an extra layer of security to your account
-											</p>
-										</div>
-										<Button variant="outline" className="glass border-border">
-											Enable 2FA
-										</Button>
-									</div>
-
-									<Separator className="bg-border" />
-
 									<div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
 										<h3 className="text-sm mb-2 text-destructive">
 											Danger Zone
