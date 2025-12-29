@@ -13,6 +13,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardSettingsRouteRouteImport } from './routes/dashboard/settings.route'
+import { Route as DashboardProfileRouteRouteImport } from './routes/dashboard/profile.route'
 import { Route as DashboardLogsRouteRouteImport } from './routes/dashboard/logs.route'
 import { Route as DashboardEndpointsRouteRouteImport } from './routes/dashboard/endpoints.route'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
@@ -37,6 +38,11 @@ const DashboardSettingsRouteRoute = DashboardSettingsRouteRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardProfileRouteRoute = DashboardProfileRouteRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardLogsRouteRoute = DashboardLogsRouteRouteImport.update({
   id: '/logs',
   path: '/logs',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
   '/dashboard/logs': typeof DashboardLogsRouteRoute
+  '/dashboard/profile': typeof DashboardProfileRouteRoute
   '/dashboard/settings': typeof DashboardSettingsRouteRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
   '/dashboard/logs': typeof DashboardLogsRouteRoute
+  '/dashboard/profile': typeof DashboardProfileRouteRoute
   '/dashboard/settings': typeof DashboardSettingsRouteRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
   '/dashboard/logs': typeof DashboardLogsRouteRoute
+  '/dashboard/profile': typeof DashboardProfileRouteRoute
   '/dashboard/settings': typeof DashboardSettingsRouteRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/endpoints'
     | '/dashboard/logs'
+    | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/'
     | '/api/trpc/$'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard/endpoints'
     | '/dashboard/logs'
+    | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard'
     | '/api/trpc/$'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/endpoints'
     | '/dashboard/logs'
+    | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/'
     | '/api/trpc/$'
@@ -145,6 +157,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/logs': {
       id: '/dashboard/logs'
       path: '/logs'
@@ -172,6 +191,7 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardEndpointsRouteRoute: typeof DashboardEndpointsRouteRoute
   DashboardLogsRouteRoute: typeof DashboardLogsRouteRoute
+  DashboardProfileRouteRoute: typeof DashboardProfileRouteRoute
   DashboardSettingsRouteRoute: typeof DashboardSettingsRouteRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -179,6 +199,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardEndpointsRouteRoute: DashboardEndpointsRouteRoute,
   DashboardLogsRouteRoute: DashboardLogsRouteRoute,
+  DashboardProfileRouteRoute: DashboardProfileRouteRoute,
   DashboardSettingsRouteRoute: DashboardSettingsRouteRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
