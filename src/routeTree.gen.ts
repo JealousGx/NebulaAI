@@ -13,6 +13,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardLogsRouteImport } from './routes/dashboard/logs'
+import { Route as DashboardEndpointsRouteRouteImport } from './routes/dashboard/endpoints.route'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -35,6 +36,11 @@ const DashboardLogsRoute = DashboardLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardEndpointsRouteRoute = DashboardEndpointsRouteRouteImport.update({
+  id: '/endpoints',
+  path: '/endpoints',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
   path: '/api/trpc/$',
@@ -44,12 +50,14 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -58,6 +66,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
   '/dashboard/logs': typeof DashboardLogsRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
@@ -67,15 +76,22 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/dashboard/endpoints'
     | '/dashboard/logs'
     | '/dashboard/'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard/logs' | '/dashboard' | '/api/trpc/$'
+  to:
+    | '/'
+    | '/dashboard/endpoints'
+    | '/dashboard/logs'
+    | '/dashboard'
+    | '/api/trpc/$'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/dashboard/endpoints'
     | '/dashboard/logs'
     | '/dashboard/'
     | '/api/trpc/$'
@@ -117,6 +133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLogsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/endpoints': {
+      id: '/dashboard/endpoints'
+      path: '/endpoints'
+      fullPath: '/dashboard/endpoints'
+      preLoaderRoute: typeof DashboardEndpointsRouteRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/api/trpc/$': {
       id: '/api/trpc/$'
       path: '/api/trpc/$'
@@ -128,11 +151,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardEndpointsRouteRoute: typeof DashboardEndpointsRouteRoute
   DashboardLogsRoute: typeof DashboardLogsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardEndpointsRouteRoute: DashboardEndpointsRouteRoute,
   DashboardLogsRoute: DashboardLogsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
