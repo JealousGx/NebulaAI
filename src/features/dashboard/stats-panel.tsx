@@ -45,7 +45,7 @@ export function StatsPanel() {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.3 }}
-			className="glass-border rounded-xl p-4 md:p-6 overflow-hidden relative group"
+			className="glass rounded-xl p-4 md:p-6 overflow-hidden relative group"
 		>
 			{/* Subtle glow effect on hover */}
 			<div className="absolute inset-0 bg-linear-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

@@ -100,7 +100,7 @@ export function ActivityFeed() {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.5 }}
-			className="glass-border rounded-xl p-4 md:p-6 h-[400px] md:h-[calc(100vh-300px)] flex flex-col overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all"
+			className="glass rounded-xl p-4 md:p-6 h-[400px] md:h-[calc(100vh-300px)] flex flex-col overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all"
 		>
 			<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
 				<div className="flex items-center gap-3">

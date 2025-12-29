@@ -91,7 +91,7 @@ export function EndpointsTable() {
 			initial={{ opacity: 0, y: 20 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ delay: 0.4 }}
-			className="glass-border rounded-xl overflow-hidden"
+			className="glass rounded-xl overflow-hidden"
 		>
 			<div className="border-b border-border px-6 py-4">
 				<h3 className="text-xl">Active Endpoints</h3>

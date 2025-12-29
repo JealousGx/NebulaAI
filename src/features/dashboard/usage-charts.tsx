@@ -46,7 +46,7 @@ const latencyData = [
 const CustomTooltip = ({ active, payload, label }: any) => {
 	if (active && payload && payload.length) {
 		return (
-			<div className="glass-border rounded-lg p-4 shadow-xl">
+			<div className="glass rounded-lg p-4 shadow-xl">
 				<p className="text-sm mb-3 text-foreground font-medium">{label}</p>
 				{payload.map((entry: any) => (
 					<div
@@ -86,7 +86,7 @@ export function UsageCharts() {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.4 }}
-				className="glass-border rounded-xl p-4 md:p-6 overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all group"
+				className="glass rounded-xl p-4 md:p-6 overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all group"
 			>
 				<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
 					<div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export function UsageCharts() {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.5 }}
-				className="glass-border rounded-xl p-4 md:p-6 overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all group"
+				className="glass rounded-xl p-4 md:p-6 overflow-hidden hover:shadow-xl hover:shadow-primary/5 transition-all group"
 			>
 				<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
 					<div className="flex items-center gap-3">
@@ -226,7 +226,7 @@ export function UsageCharts() {
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ delay: 0.6 }}
-				className="glass-border rounded-xl p-4 md:p-6 overflow-hidden lg:col-span-2 hover:shadow-xl hover:shadow-primary/5 transition-all group"
+				className="glass rounded-xl p-4 md:p-6 overflow-hidden lg:col-span-2 hover:shadow-xl hover:shadow-primary/5 transition-all group"
 			>
 				<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
 					<div className="flex items-center gap-3">
