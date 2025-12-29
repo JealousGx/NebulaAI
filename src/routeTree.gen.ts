@@ -12,7 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as DashboardLogsRouteImport } from './routes/dashboard/logs'
+import { Route as DashboardSettingsRouteRouteImport } from './routes/dashboard/settings.route'
+import { Route as DashboardLogsRouteRouteImport } from './routes/dashboard/logs.route'
 import { Route as DashboardEndpointsRouteRouteImport } from './routes/dashboard/endpoints.route'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 
@@ -31,7 +32,12 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardLogsRoute = DashboardLogsRouteImport.update({
+const DashboardSettingsRouteRoute = DashboardSettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLogsRouteRoute = DashboardLogsRouteRouteImport.update({
   id: '/logs',
   path: '/logs',
   getParentRoute: () => DashboardRoute,
@@ -51,14 +57,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
-  '/dashboard/logs': typeof DashboardLogsRoute
+  '/dashboard/logs': typeof DashboardLogsRouteRoute
+  '/dashboard/settings': typeof DashboardSettingsRouteRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
-  '/dashboard/logs': typeof DashboardLogsRoute
+  '/dashboard/logs': typeof DashboardLogsRouteRoute
+  '/dashboard/settings': typeof DashboardSettingsRouteRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
@@ -67,7 +75,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/endpoints': typeof DashboardEndpointsRouteRoute
-  '/dashboard/logs': typeof DashboardLogsRoute
+  '/dashboard/logs': typeof DashboardLogsRouteRoute
+  '/dashboard/settings': typeof DashboardSettingsRouteRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/endpoints'
     | '/dashboard/logs'
+    | '/dashboard/settings'
     | '/dashboard/'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard/endpoints'
     | '/dashboard/logs'
+    | '/dashboard/settings'
     | '/dashboard'
     | '/api/trpc/$'
   id:
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/endpoints'
     | '/dashboard/logs'
+    | '/dashboard/settings'
     | '/dashboard/'
     | '/api/trpc/$'
   fileRoutesById: FileRoutesById
@@ -126,11 +138,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/logs': {
       id: '/dashboard/logs'
       path: '/logs'
       fullPath: '/dashboard/logs'
-      preLoaderRoute: typeof DashboardLogsRouteImport
+      preLoaderRoute: typeof DashboardLogsRouteRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/endpoints': {
@@ -152,13 +171,15 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardEndpointsRouteRoute: typeof DashboardEndpointsRouteRoute
-  DashboardLogsRoute: typeof DashboardLogsRoute
+  DashboardLogsRouteRoute: typeof DashboardLogsRouteRoute
+  DashboardSettingsRouteRoute: typeof DashboardSettingsRouteRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardEndpointsRouteRoute: DashboardEndpointsRouteRoute,
-  DashboardLogsRoute: DashboardLogsRoute,
+  DashboardLogsRouteRoute: DashboardLogsRouteRoute,
+  DashboardSettingsRouteRoute: DashboardSettingsRouteRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 
