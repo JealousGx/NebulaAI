@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import { LogOut, Settings, User } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query"
+import { Link, useNavigate } from "@tanstack/react-router"
+import { LogOut, Settings, User } from "lucide-react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,9 +10,27 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
+
+import { authClient } from "@/lib/auth/auth-client"
 
 export function UserProfileDropdown() {
+	const navigate = useNavigate()
+	const queryClient = useQueryClient()
+
+	const handleSignOut = async () => {
+		await authClient.signOut({
+			fetchOptions: {
+				onSuccess: async () => {
+					await queryClient.invalidateQueries({ queryKey: ["auth", "getUser"] })
+
+					navigate({
+						to: "/",
+					})
+				},
+			},
+		})
+	}
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger className="focus:outline-none w-full">
@@ -50,11 +69,14 @@ export function UserProfileDropdown() {
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator className="bg-border" />
-				<DropdownMenuItem className="cursor-pointer text-destructive">
+				<DropdownMenuItem
+					onClick={handleSignOut}
+					className="cursor-pointer text-destructive"
+				>
 					<LogOut className="mr-2 h-4 w-4" />
 					<span>Log out</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
-	);
+	)
 }
