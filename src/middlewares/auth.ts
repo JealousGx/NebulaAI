@@ -18,7 +18,7 @@ export const authMiddleware = createMiddleware().server(
 			throw redirect({
 				to: "/",
 				search: {
-					auth: true,
+					auth: "true",
 					r: path,
 				},
 			})
