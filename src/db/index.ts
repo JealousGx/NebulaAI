@@ -1,11 +1,13 @@
-import { config } from 'dotenv'
+import { config } from "dotenv"
 
-import { drizzle } from 'drizzle-orm/mysql2'
-import mysql from 'mysql2/promise'
+import { drizzle } from "drizzle-orm/mysql2"
+import mysql from "mysql2/promise"
 
-import * as schema from './schema.ts'
+import * as schema from "./schema"
 
 config()
 
-const connection = await mysql.createConnection(process.env.DATABASE_URL!)
-export const db = drizzle(connection, { schema })
+const connection = await mysql.createConnection(
+	process.env.DATABASE_URL as string,
+)
+export const db = drizzle(connection, { schema, mode: "default" })

@@ -1,33 +1,44 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import type { QueryClient } from "@tanstack/react-query";
+import { TanStackDevtools } from "@tanstack/react-devtools"
+import type { QueryClient } from "@tanstack/react-query"
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Scripts,
-} from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+} from "@tanstack/react-router"
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
+import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query"
 
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner"
 
-import { VortexBackground } from "@/features/vortex-background";
+import { VortexBackground } from "@/features/vortex-background"
 
-import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
-import type { TRPCRouter } from "@/integrations/trpc/router";
+import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools"
+import type { TRPCRouter } from "@/integrations/trpc/router"
 
-import { AppProviders } from "@/providers";
+import { getUser } from "@/lib/auth/functions"
 
-import { seo } from "@/utils/seo";
+import { AppProviders } from "@/providers"
 
-import appCss from "../styles.css?url";
+import { seo } from "@/utils/seo"
+
+import appCss from "../styles.css?url"
 
 interface MyRouterContext {
-	queryClient: QueryClient;
+	queryClient: QueryClient
 
-	trpc: TRPCOptionsProxy<TRPCRouter>;
+	trpc: TRPCOptionsProxy<TRPCRouter>
+	user: Awaited<ReturnType<typeof getUser>>
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+	beforeLoad: async ({ context }) => {
+		const user = await context.queryClient.fetchQuery({
+			queryKey: ["auth", "getUser"],
+			queryFn: getUser,
+		})
+
+		return { user }
+	},
 	head: () => ({
 		meta: [
 			{
@@ -78,7 +89,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	}),
 
 	shellComponent: RootDocument,
-});
+})
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
@@ -107,5 +118,5 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<Scripts />
 			</body>
 		</html>
-	);
+	)
 }

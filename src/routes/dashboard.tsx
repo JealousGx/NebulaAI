@@ -1,13 +1,35 @@
 // dashboard layout
 
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { AnimatePresence, motion, type Variants } from "motion/react";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { AnimatePresence, motion, type Variants } from "motion/react"
 
-import { DashboardSidebar } from "@/features/dashboard/sidebar";
+import { DashboardSidebar } from "@/features/dashboard/sidebar"
+
+import { authMiddleware } from "@/middlewares"
 
 export const Route = createFileRoute("/dashboard")({
+	beforeLoad: async ({ context, location }) => {
+		const path = (() => {
+			const pathname = new URL(location.url).pathname
+			const parts = pathname.split("/").filter(Boolean)
+			return parts.length ? parts[parts.length - 1] : ""
+		})()
+
+		if (!context.user) {
+			throw redirect({
+				to: "/",
+				search: {
+					auth: "true",
+					r: path,
+				},
+			})
+		}
+	},
+	server: {
+		middleware: [authMiddleware],
+	},
 	component: RouteComponent,
-});
+})
 
 function RouteComponent() {
 	const pageVariants: Variants = {
@@ -31,7 +53,7 @@ function RouteComponent() {
 				ease: "easeIn",
 			},
 		},
-	};
+	}
 
 	return (
 		<div className="flex">
@@ -49,5 +71,5 @@ function RouteComponent() {
 				</motion.div>
 			</AnimatePresence>
 		</div>
-	);
+	)
 }
