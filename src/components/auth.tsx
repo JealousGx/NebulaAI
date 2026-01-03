@@ -5,6 +5,8 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 
+import { authClient } from "@/lib/auth/auth-client"
+
 interface AuthModalProps {
 	isOpen: boolean
 	onClose: () => void
@@ -18,7 +20,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 	const [email, setEmail] = useState("")
 	const [code, setCode] = useState("")
 	const [isLoading, setIsLoading] = useState(false)
-	const [generatedCode, setGeneratedCode] = useState("")
 
 	const handleEmailSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -30,18 +31,25 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
 		setIsLoading(true)
 
-		// Simulate sending email
-		const mockCode = Math.floor(100000 + Math.random() * 900000).toString()
-		setGeneratedCode(mockCode)
+		const { error } = await authClient.emailOtp.sendVerificationOtp({
+			email,
+			type: "sign-in",
+		})
 
-		setTimeout(() => {
-			setIsLoading(false)
-			setStep("code")
-			toast.success("Code sent!", {
-				description: `Check your email at ${email}. (Demo code: ${mockCode})`,
-				duration: 10000,
+		setIsLoading(false)
+
+		if (error) {
+			toast.error("Failed to send code", {
+				description: error.message,
 			})
-		}, 1500)
+			return
+		}
+
+		setStep("code")
+		toast.success("Code sent!", {
+			description: `Check your email at ${email}`,
+			duration: 10000,
+		})
 	}
 
 	const handleCodeSubmit = async (e: React.FormEvent) => {
@@ -54,28 +62,33 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
 		setIsLoading(true)
 
-		setTimeout(() => {
-			if (code === generatedCode) {
-				setStep("success")
-				setIsLoading(false)
+		const { data, error } = await authClient.signIn.emailOtp({
+			email,
+			otp: code,
+		})
 
-				setTimeout(() => {
-					onSuccess()
-				}, 2000)
-			} else {
-				setIsLoading(false)
-				toast.error("Invalid code", {
-					description: "Please check the code and try again",
-				})
-			}
-		}, 1000)
+		console.log({ data, error })
+
+		if (error) {
+			setIsLoading(false)
+			toast.error("Invalid code", {
+				description: error.message,
+			})
+			return
+		}
+
+		setStep("success")
+		setIsLoading(false)
+
+		setTimeout(() => {
+			onSuccess()
+		}, 2000)
 	}
 
 	const handleClose = () => {
 		setStep("email")
 		setEmail("")
 		setCode("")
-		setGeneratedCode("")
 		onClose()
 	}
 
