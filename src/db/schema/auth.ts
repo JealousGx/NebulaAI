@@ -8,12 +8,21 @@ import {
 	varchar,
 } from "drizzle-orm/mysql-core"
 
+import { activityLog } from "./activity-log"
+import { apiKey } from "./api-key"
+import { endpoint } from "./endpoints"
+import { notificationSettings } from "./notification-settings"
+import { workspace } from "./workspace"
+
 export const user = mysqlTable("user", {
 	id: varchar("id", { length: 36 }).primaryKey(),
 	name: varchar("name", { length: 255 }).notNull(),
 	email: varchar("email", { length: 255 }).notNull().unique(),
 	emailVerified: boolean("email_verified").default(false).notNull(),
 	image: text("image"),
+	bio: text("bio"),
+	location: varchar("location", { length: 255 }),
+	website: varchar("website", { length: 255 }),
 	createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { fsp: 3 })
 		.defaultNow()
@@ -80,9 +89,20 @@ export const verification = mysqlTable(
 	(table) => [index("verification_identifier_idx").on(table.identifier)],
 )
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ one, many }) => ({
 	sessions: many(session),
 	accounts: many(account),
+	endpoints: many(endpoint),
+	activityLogs: many(activityLog),
+	workspace: one(workspace, {
+		fields: [user.id],
+		references: [workspace.userId],
+	}),
+	notificationSettings: one(notificationSettings, {
+		fields: [user.id],
+		references: [notificationSettings.userId],
+	}),
+	apiKeys: many(apiKey),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
