@@ -67,7 +67,9 @@ function RouteComponent() {
 									<Separator className="bg-border" />
 
 									<div className="space-y-2">
-										<Label htmlFor="webhook-url">Webhook URL (Optional)</Label>
+										<Label htmlFor="webhook-url">
+											Webhook URL (Optional. not implemented yet!)
+										</Label>
 										<Input
 											id="webhook-url"
 											placeholder="https://your-app.com/webhooks/nebula"
@@ -119,7 +121,7 @@ function RouteComponent() {
 								<h2 className="text-xl mb-6">Security Settings</h2>
 
 								<div className="space-y-6">
-									<div className="space-y-2">
+									{/* <div className="space-y-2">
 										<Label htmlFor="current-password">Current Password</Label>
 										<Input
 											id="current-password"
@@ -148,7 +150,7 @@ function RouteComponent() {
 										/>
 									</div>
 
-									<Separator className="bg-border" />
+									<Separator className="bg-border" /> */}
 
 									<div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
 										<h3 className="text-sm mb-2 text-destructive">
