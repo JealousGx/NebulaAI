@@ -1,9 +1,10 @@
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	index,
 	mysqlEnum,
 	mysqlTable,
 	serial,
+	text,
 	timestamp,
 	varchar,
 } from "drizzle-orm/mysql-core"
@@ -15,9 +16,11 @@ export const endpoint = mysqlTable(
 		id: serial("id").primaryKey(),
 		name: varchar("name", { length: 255 }).notNull(),
 		provider: varchar("provider", { length: 255 }).notNull(),
+		model: varchar("model", { length: 255 }).notNull(),
 		status: mysqlEnum("status", ["active", "error", "inactive"])
 			.default("active")
 			.notNull(),
+		description: text("description"),
 		userId: varchar("user_id", { length: 36 })
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -36,3 +39,5 @@ export const endpointRelations = relations(endpoint, ({ one }) => ({
 		references: [user.id],
 	}),
 }))
+
+export type Endpoint = InferSelectModel<typeof endpoint>

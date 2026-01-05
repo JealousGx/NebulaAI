@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	boolean,
 	mysqlTable,
@@ -34,3 +34,5 @@ export const notificationSettingsRelations = relations(
 		}),
 	}),
 )
+
+export type NotificationSettings = InferSelectModel<typeof notificationSettings>

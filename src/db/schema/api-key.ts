@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	index,
 	mysqlTable,
@@ -28,3 +28,5 @@ export const apiKeyRelations = relations(apiKey, ({ one }) => ({
 		references: [user.id],
 	}),
 }))
+
+export type ApiKey = InferSelectModel<typeof apiKey>

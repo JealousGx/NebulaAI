@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	boolean,
 	mysqlTable,
@@ -32,3 +32,5 @@ export const workspaceRelations = relations(workspace, ({ one }) => ({
 		references: [user.id],
 	}),
 }))
+
+export type Workspace = InferSelectModel<typeof workspace>

@@ -1,5 +1,6 @@
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import {
+	bigint,
 	decimal,
 	index,
 	int,
@@ -10,6 +11,7 @@ import {
 	varchar,
 } from "drizzle-orm/mysql-core"
 import { user } from "./auth"
+import { endpoint } from "./endpoints"
 
 export const activityLog = mysqlTable(
 	"activity_log",
@@ -17,13 +19,18 @@ export const activityLog = mysqlTable(
 		id: serial("id").primaryKey(),
 		timestamp: timestamp("timestamp", { fsp: 3 }).defaultNow().notNull(),
 		method: varchar("method", { length: 10 }).notNull(),
-		endpoint: varchar("endpoint", { length: 255 }).notNull(),
+		endpointId: bigint("endpoint_id", {
+			mode: "number",
+			unsigned: true,
+		}).references(() => endpoint.id),
 		status: int("status").notNull(),
 		latency: int("latency").notNull(),
 		cost: decimal("cost", { precision: 10, scale: 4 }).notNull(),
 		ip: varchar("ip", { length: 45 }),
 		request: text("request"),
 		response: text("response"),
+		traceId: varchar("trace_id", { length: 255 }),
+		groupId: varchar("group_id", { length: 255 }),
 		userId: varchar("user_id", { length: 36 })
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
@@ -41,4 +48,10 @@ export const activityLogRelations = relations(activityLog, ({ one }) => ({
 		fields: [activityLog.userId],
 		references: [user.id],
 	}),
+	endpoint: one(endpoint, {
+		fields: [activityLog.endpointId],
+		references: [endpoint.id],
+	}),
 }))
+
+export type ActivityLog = InferSelectModel<typeof activityLog>
