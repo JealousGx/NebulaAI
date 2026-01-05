@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query"
+import { MutationCache, QueryClient } from "@tanstack/react-query"
 import { createTRPCClient, httpBatchStreamLink } from "@trpc/client"
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query"
 import superjson from "superjson"
@@ -31,6 +31,19 @@ export function getContext() {
 			dehydrate: { serializeData: superjson.serialize },
 			hydrate: { deserializeData: superjson.deserialize },
 		},
+		mutationCache: new MutationCache({
+			onSettled: async (_data, _error, _vars, _context, mutation) => {
+				const meta = mutation.meta as {
+					invalidateQueryKey?: unknown[]
+				}
+
+				if (meta.invalidateQueryKey) {
+					await queryClient.invalidateQueries({
+						queryKey: meta.invalidateQueryKey,
+					})
+				}
+			},
+		}),
 	})
 
 	const serverHelpers = createTRPCOptionsProxy({
