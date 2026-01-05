@@ -15,9 +15,11 @@ import { VortexBackground } from "@/features/vortex-background"
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools"
 import type { TRPCRouter } from "@/integrations/trpc/router"
 
-import { getUser } from "@/lib/auth/functions"
+import type { getUser } from "@/lib/auth/functions"
 
 import { AppProviders } from "@/providers"
+
+import { userQueryOptions } from "@/queries/user"
 
 import { seo } from "@/utils/seo"
 
@@ -32,10 +34,7 @@ interface MyRouterContext {
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	beforeLoad: async ({ context }) => {
-		const user = await context.queryClient.fetchQuery({
-			queryKey: ["auth", "getUser"],
-			queryFn: getUser,
-		})
+		const user = await context.queryClient.fetchQuery(userQueryOptions)
 
 		return { user }
 	},
@@ -47,9 +46,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 			{
 				name: "viewport",
 				content: "width=device-width, initial-scale=1",
-			},
-			{
-				title: "Nebula AI",
 			},
 			...seo({
 				title:
