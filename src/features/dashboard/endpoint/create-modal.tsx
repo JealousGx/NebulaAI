@@ -1,52 +1,85 @@
-import { Check, Copy, Sparkles, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useStore } from "@tanstack/react-form"
+import { Check, Copy, Sparkles, X } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
+import React, { useState } from "react"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button"
+
+import { useAppForm } from "@/hooks/use-form"
 
 interface CreateEndpointModalProps {
-	isOpen: boolean;
-	onClose: () => void;
+	isOpen: boolean
+	onClose: () => void
 }
 
 export function CreateEndpointModal({
 	isOpen,
 	onClose,
 }: CreateEndpointModalProps) {
-	const [endpointName, setEndpointName] = useState("");
-	const [provider, setProvider] = useState("openai");
-	const [model, setModel] = useState("");
-	const [apiKey, setApiKey] = useState("");
-	const [copied, setCopied] = useState(false);
+	const [endpointName, setEndpointName] = useState("")
+	const [provider, setProvider] = useState("openai")
+	const [model, setModel] = useState("")
+	const [apiKey, setApiKey] = useState("")
+	const [copied, setCopied] = useState(false)
 
-	const generatedUrl = `https://api.nebula-ai.dev/proxy/${endpointName.toLowerCase().replace(/\s+/g, "-") || "your-endpoint"}`;
+	const form = useAppForm({
+		defaultValues: {
+			name: "",
+			provider: "OpenAI",
+			model: "",
+			apiKey: "",
+			description: "",
+		},
+		validators: {
+			onBlur: ({ value }) => {
+				const required: Record<string, string> = {
+					name: "Name",
+					provider: "Provider",
+					model: "Model",
+					apiKey: "API Key",
+				}
+
+				const fields = Object.entries(required).reduce(
+					(acc, [key, label]) => {
+						const v = (value as Record<string, unknown>)[key]
+						if (!v || String(v).trim().length === 0) {
+							acc[key] = `${label} is required`
+						}
+						return acc
+					},
+					{} as Record<string, string>,
+				)
+
+				return { fields }
+			},
+		},
+		onSubmit: ({ value }) => {
+			console.log(value)
+			// Show success message
+			alert("Form submitted successfully!")
+		},
+	})
+
+	const generatedUrl = `https://api.nebula-ai.dev/proxy/${endpointName.toLowerCase().replace(/\s+/g, "-") || "your-endpoint"}`
 
 	const handleCopy = () => {
-		navigator.clipboard.writeText(generatedUrl);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
-	};
+		navigator.clipboard.writeText(generatedUrl)
+		setCopied(true)
+		setTimeout(() => setCopied(false), 2000)
+	}
 
 	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
+		e.preventDefault()
 		// Handle form submission
-		onClose();
-	};
+		onClose()
+	}
+
+	const values = useStore(form.store, (state) => state.values)
 
 	return (
 		<AnimatePresence>
 			{isOpen && (
-				<>
+				<React.Fragment>
 					{/* Backdrop */}
 					<motion.div
 						initial={{ opacity: 0 }}
@@ -91,8 +124,15 @@ export function CreateEndpointModal({
 
 							<div className="grid grid-cols-1 lg:grid-cols-[1fr_400px]">
 								{/* Form */}
-								<form onSubmit={handleSubmit} className="p-8 space-y-6">
-									<div className="space-y-2">
+								<form
+									onSubmit={(e) => {
+										e.preventDefault()
+										e.stopPropagation()
+										form.handleSubmit()
+									}}
+									className="p-8 space-y-6"
+								>
+									{/* <div className="space-y-2">
 										<Label htmlFor="endpoint-name">Endpoint Name</Label>
 										<Input
 											id="endpoint-name"
@@ -105,9 +145,19 @@ export function CreateEndpointModal({
 										<p className="text-xs text-muted-foreground">
 											A friendly name to identify this endpoint
 										</p>
-									</div>
+									</div> */}
 
-									<div className="grid grid-cols-2 gap-4">
+									<form.AppField name="name">
+										{(field) => (
+											<field.TextField
+												label="Endpoint Name"
+												placeholder="GPT-4 Turbo"
+												description="A friendly name to identify this endpoint"
+											/>
+										)}
+									</form.AppField>
+
+									{/* <div className="grid grid-cols-2 gap-4">
 										<div className="space-y-2">
 											<Label htmlFor="provider">Provider</Label>
 											<Select value={provider} onValueChange={setProvider}>
@@ -137,9 +187,29 @@ export function CreateEndpointModal({
 												required
 											/>
 										</div>
+									</div> */}
+
+									<div className="grid grid-cols-2 gap-4">
+										<form.AppField name="provider">
+											{(field) => (
+												<field.TextField
+													label="Provider"
+													placeholder="OpenAI"
+												/>
+											)}
+										</form.AppField>
+
+										<form.AppField name="model">
+											{(field) => (
+												<field.TextField
+													label="Model"
+													placeholder="gpt-4-turbo"
+												/>
+											)}
+										</form.AppField>
 									</div>
 
-									<div className="space-y-2">
+									{/* <div className="space-y-2">
 										<Label htmlFor="api-key">API Key</Label>
 										<Input
 											id="api-key"
@@ -153,9 +223,20 @@ export function CreateEndpointModal({
 										<p className="text-xs text-muted-foreground">
 											Your API key will be encrypted and stored securely
 										</p>
-									</div>
+									</div> */}
 
-									<div className="space-y-2">
+									<form.AppField name="apiKey">
+										{(field) => (
+											<field.TextField
+												label="API Key"
+												placeholder="sk-..."
+												className="font-mono"
+												description="Your API key will be encrypted and stored securely"
+											/>
+										)}
+									</form.AppField>
+
+									{/* <div className="space-y-2">
 										<Label htmlFor="description">Description (Optional)</Label>
 										<Textarea
 											id="description"
@@ -163,23 +244,40 @@ export function CreateEndpointModal({
 											className="bg-background/40 border-border resize-none"
 											rows={3}
 										/>
-									</div>
+									</div> */}
+
+									<form.AppField name="description">
+										{(field) => (
+											<field.TextArea
+												label="Description"
+												placeholder="Add notes about this endpoint..."
+												rows={3}
+											/>
+										)}
+									</form.AppField>
 
 									<div className="flex gap-3 pt-4">
-										<Button
-											type="submit"
-											className="bg-primary text-primary-foreground hover:shadow-lg transition-all"
-										>
-											Create Endpoint
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											onClick={onClose}
-											className="glass border-border"
-										>
-											Cancel
-										</Button>
+										<form.AppForm>
+											<form.SubscribeButton
+												label="Create Endpoint"
+												className="bg-primary text-primary-foreground hover:shadow-lg transition-all"
+											/>
+
+											{/* <Button
+												type="submit"
+												className="bg-primary text-primary-foreground hover:shadow-lg transition-all"
+											>
+												Create Endpoint
+											</Button> */}
+											<Button
+												type="button"
+												variant="outline"
+												onClick={onClose}
+												className="glass border-border"
+											>
+												Cancel
+											</Button>
+										</form.AppForm>
 									</div>
 								</form>
 
@@ -199,7 +297,7 @@ export function CreateEndpointModal({
 													Endpoint Name
 												</div>
 												<div className="text-sm">
-													{endpointName || "Your Endpoint"}
+													{values.name || "Your Endpoint"}
 												</div>
 											</div>
 
@@ -210,10 +308,12 @@ export function CreateEndpointModal({
 												<div className="flex items-center gap-2">
 													<div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
 														<span className="text-xs">
-															{provider.charAt(0).toUpperCase()}
+															{values.provider.charAt(0).toUpperCase()}
 														</span>
 													</div>
-													<span className="text-sm capitalize">{provider}</span>
+													<span className="text-sm capitalize">
+														{values.provider}
+													</span>
 												</div>
 											</div>
 
@@ -222,7 +322,7 @@ export function CreateEndpointModal({
 													Model
 												</div>
 												<div className="text-sm font-mono">
-													{model || "Not specified"}
+													{values.model || "Not specified"}
 												</div>
 											</div>
 
@@ -266,8 +366,8 @@ export function CreateEndpointModal({
 							</div>
 						</motion.div>
 					</div>
-				</>
+				</React.Fragment>
 			)}
 		</AnimatePresence>
-	);
+	)
 }
