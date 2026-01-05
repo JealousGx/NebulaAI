@@ -1,8 +1,7 @@
+import { createServerFn } from "@tanstack/react-start"
 import { Resend } from "resend"
 
 import { env } from "@/env"
-
-const resend = new Resend(env.RESEND_API_KEY)
 
 type BaseEmail = {
 	to: string
@@ -34,32 +33,36 @@ type TemplateEmail = BaseEmail & {
 	text?: never
 }
 
-export type SendEmailArgs = RawEmail | TemplateEmail
+type SendEmailArgs = RawEmail | TemplateEmail
 
-export async function sendEmail(args: SendEmailArgs) {
-	const { from, to, template, subject, html, text } = args
+export const sendEmail = createServerFn({ method: "POST" })
+	.inputValidator((args: SendEmailArgs) => args)
+	.handler(async ({ data: args }) => {
+		const resend = new Resend(env.RESEND_API_KEY)
 
-	if (template) {
-		await resend.emails
-			.send({
-				from,
-				to,
-				template,
-			})
-			.catch((error) => {
-				console.error("Failed to send email:", error)
-			})
-	} else {
-		await resend.emails
-			.send({
-				from,
-				to,
-				subject,
-				html,
-				text,
-			})
-			.catch((error) => {
-				console.error("Failed to send email:", error)
-			})
-	}
-}
+		const { from, to, template, subject, html, text } = args
+
+		if (template) {
+			await resend.emails
+				.send({
+					from,
+					to,
+					template,
+				})
+				.catch((error) => {
+					console.error("Failed to send email:", error)
+				})
+		} else {
+			await resend.emails
+				.send({
+					from,
+					to,
+					subject,
+					html,
+					text,
+				})
+				.catch((error) => {
+					console.error("Failed to send email:", error)
+				})
+		}
+	})
