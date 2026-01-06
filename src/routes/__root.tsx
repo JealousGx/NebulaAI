@@ -34,7 +34,10 @@ interface MyRouterContext {
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	beforeLoad: async ({ context }) => {
-		const user = await context.queryClient.fetchQuery(userQueryOptions)
+		const user = await context.queryClient.fetchQuery({
+			queryKey: [...userQueryOptions.queryKey, "auth"],
+			queryFn: userQueryOptions.getOne,
+		})
 
 		return { user }
 	},
