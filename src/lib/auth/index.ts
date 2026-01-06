@@ -5,6 +5,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start"
 
 import { db } from "@/db" // your drizzle instance
 import { sendAuthOTPEmail } from "../emails/auth-otp"
+import { prefixedId } from "../id"
 
 const OTP_LENGTH = 6
 const OTP_EXPIRATION_SECONDS = 600 // 10 minutes
@@ -24,6 +25,34 @@ export const auth = betterAuth({
 		}),
 		tanstackStartCookies(), // make sure this is the last plugin in the array
 	],
+
+	advanced: {
+		database: {
+			generateId: (opts) => {
+				switch (opts.model) {
+					case "user": {
+						return prefixedId("usr")
+					}
+
+					case "session": {
+						return prefixedId("sess")
+					}
+
+					case "account": {
+						return prefixedId("acct")
+					}
+
+					case "verification": {
+						return prefixedId("verif")
+					}
+
+					default: {
+						return false
+					}
+				}
+			},
+		},
+	},
 })
 
 async function sendVerificationOTP(
