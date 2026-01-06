@@ -1,13 +1,5 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1767089694328,
-      "tag": "0000_gigantic_red_hulk",
-      "breakpoints": true
-    }
-  ]
+  "entries": []
 }
