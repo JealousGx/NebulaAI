@@ -1,35 +1,57 @@
 import { useStore } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
 import { Check, Copy, Sparkles, X } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import React, { useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 
+import { env } from "@/env"
+
 import { useAppForm } from "@/hooks/use-form"
+
+import { useTRPC } from "@/integrations/trpc/react"
+
+import type { Endpoint } from "@/types"
 
 interface CreateEndpointModalProps {
 	isOpen: boolean
 	onClose: () => void
 }
 
+type NewEndpoint = Omit<
+	Endpoint,
+	"id" | "createdAt" | "updatedAt" | "userId" | "status"
+> & {
+	apiKey: string
+}
+
+const APP_URL = env.VITE_APP_URL
+
 export function CreateEndpointModal({
 	isOpen,
 	onClose,
 }: CreateEndpointModalProps) {
-	const [endpointName, setEndpointName] = useState("")
-	const [provider, setProvider] = useState("openai")
-	const [model, setModel] = useState("")
-	const [apiKey, setApiKey] = useState("")
+	const [generatedUrl, setGeneratedUrl] = useState("")
 	const [copied, setCopied] = useState(false)
+
+	const trpc = useTRPC()
+	const mutation = useMutation({
+		...trpc.endpoints.create.mutationOptions(),
+		meta: {
+			invalidateQueryKey: ["getEndpoints"],
+		},
+	})
 
 	const form = useAppForm({
 		defaultValues: {
 			name: "",
-			provider: "OpenAI",
+			provider: "",
 			model: "",
 			apiKey: "",
 			description: "",
-		},
+		} satisfies NewEndpoint,
 		validators: {
 			onBlur: ({ value }) => {
 				const required: Record<string, string> = {
@@ -53,25 +75,30 @@ export function CreateEndpointModal({
 				return { fields }
 			},
 		},
-		onSubmit: ({ value }) => {
-			console.log(value)
-			// Show success message
-			alert("Form submitted successfully!")
+		onSubmit: async ({ value }) => {
+			const created = await toast
+				.promise(mutation.mutateAsync(value), {
+					loading: "Creating endpoint...",
+					success: "Endpoint created successfully!",
+					error: (err) => `Error: ${err.message}`,
+				})
+				.unwrap()
+
+			setGeneratedUrl(`${APP_URL}/proxy/${created.id}`)
 		},
 	})
 
-	const generatedUrl = `https://api.nebula-ai.dev/proxy/${endpointName.toLowerCase().replace(/\s+/g, "-") || "your-endpoint"}`
-
 	const handleCopy = () => {
+		if (!generatedUrl)
+			return toast.error("No URL to copy", {
+				description: "Please create an endpoint first.",
+			})
+
 		navigator.clipboard.writeText(generatedUrl)
 		setCopied(true)
-		setTimeout(() => setCopied(false), 2000)
-	}
+		toast.success("URL copied to clipboard", { duration: 2000 })
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault()
-		// Handle form submission
-		onClose()
+		setTimeout(() => setCopied(false), 2000)
 	}
 
 	const values = useStore(form.store, (state) => state.values)
@@ -132,21 +159,6 @@ export function CreateEndpointModal({
 									}}
 									className="p-8 space-y-6"
 								>
-									{/* <div className="space-y-2">
-										<Label htmlFor="endpoint-name">Endpoint Name</Label>
-										<Input
-											id="endpoint-name"
-											placeholder="e.g., GPT-4 Turbo"
-											value={endpointName}
-											onChange={(e) => setEndpointName(e.target.value)}
-											className="bg-background/40 border-border"
-											required
-										/>
-										<p className="text-xs text-muted-foreground">
-											A friendly name to identify this endpoint
-										</p>
-									</div> */}
-
 									<form.AppField name="name">
 										{(field) => (
 											<field.TextField
@@ -157,44 +169,13 @@ export function CreateEndpointModal({
 										)}
 									</form.AppField>
 
-									{/* <div className="grid grid-cols-2 gap-4">
-										<div className="space-y-2">
-											<Label htmlFor="provider">Provider</Label>
-											<Select value={provider} onValueChange={setProvider}>
-												<SelectTrigger className="bg-background/40 border-border">
-													<SelectValue />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="openai">OpenAI</SelectItem>
-													<SelectItem value="anthropic">Anthropic</SelectItem>
-													<SelectItem value="replicate">Replicate</SelectItem>
-													<SelectItem value="huggingface">
-														Hugging Face
-													</SelectItem>
-													<SelectItem value="cohere">Cohere</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
-
-										<div className="space-y-2">
-											<Label htmlFor="model">Model</Label>
-											<Input
-												id="model"
-												placeholder="e.g., gpt-4-turbo"
-												value={model}
-												onChange={(e) => setModel(e.target.value)}
-												className="bg-background/40 border-border"
-												required
-											/>
-										</div>
-									</div> */}
-
 									<div className="grid grid-cols-2 gap-4">
 										<form.AppField name="provider">
 											{(field) => (
 												<field.TextField
 													label="Provider"
 													placeholder="OpenAI"
+													description="The AI service provider (e.g., OpenAI, Anthropic)"
 												/>
 											)}
 										</form.AppField>
@@ -204,26 +185,11 @@ export function CreateEndpointModal({
 												<field.TextField
 													label="Model"
 													placeholder="gpt-4-turbo"
+													description="The specific model to proxy (e.g., gpt-4-turbo)"
 												/>
 											)}
 										</form.AppField>
 									</div>
-
-									{/* <div className="space-y-2">
-										<Label htmlFor="api-key">API Key</Label>
-										<Input
-											id="api-key"
-											type="password"
-											placeholder="sk-..."
-											value={apiKey}
-											onChange={(e) => setApiKey(e.target.value)}
-											className="bg-background/40 border-border font-mono"
-											required
-										/>
-										<p className="text-xs text-muted-foreground">
-											Your API key will be encrypted and stored securely
-										</p>
-									</div> */}
 
 									<form.AppField name="apiKey">
 										{(field) => (
@@ -235,16 +201,6 @@ export function CreateEndpointModal({
 											/>
 										)}
 									</form.AppField>
-
-									{/* <div className="space-y-2">
-										<Label htmlFor="description">Description (Optional)</Label>
-										<Textarea
-											id="description"
-											placeholder="Add notes about this endpoint..."
-											className="bg-background/40 border-border resize-none"
-											rows={3}
-										/>
-									</div> */}
 
 									<form.AppField name="description">
 										{(field) => (
@@ -263,12 +219,6 @@ export function CreateEndpointModal({
 												className="bg-primary text-primary-foreground hover:shadow-lg transition-all"
 											/>
 
-											{/* <Button
-												type="submit"
-												className="bg-primary text-primary-foreground hover:shadow-lg transition-all"
-											>
-												Create Endpoint
-											</Button> */}
 											<Button
 												type="button"
 												variant="outline"
@@ -332,7 +282,7 @@ export function CreateEndpointModal({
 												</div>
 												<div className="flex items-center gap-2">
 													<code className="flex-1 text-xs bg-background/40 px-3 py-2 rounded border border-border truncate">
-														{generatedUrl}
+														{generatedUrl || "Not created yet"}
 													</code>
 													<Button
 														size="sm"
