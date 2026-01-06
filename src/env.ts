@@ -6,6 +6,7 @@ export const env = createEnv({
 		SERVER_URL: z.url().optional(),
 		RESEND_API_KEY: z.string().min(1),
 		APP_URL: z.url(),
+		ENCRYPTION_KEY: z.string(),
 	},
 
 	/**
@@ -29,6 +30,7 @@ export const env = createEnv({
 		VITE_APP_TITLE: import.meta.env.VITE_APP_TITLE,
 		APP_URL: process.env.APP_URL,
 		VITE_APP_URL: import.meta.env.VITE_APP_URL,
+		ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
 	},
 
 	/**
