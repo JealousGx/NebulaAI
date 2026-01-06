@@ -1,17 +1,16 @@
 import { type InferSelectModel, relations } from "drizzle-orm"
-import {
-	index,
-	mysqlTable,
-	serial,
-	timestamp,
-	varchar,
-} from "drizzle-orm/mysql-core"
+import { index, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core"
+
+import { prefixedId } from "@/lib/id"
+
 import { user } from "./auth"
 
 export const apiKey = mysqlTable(
 	"api_key",
 	{
-		id: serial("id").primaryKey(),
+		id: varchar("id", { length: 36 })
+			.primaryKey()
+			.$defaultFn(() => prefixedId("key")),
 		name: varchar("name", { length: 255 }).notNull(),
 		key: varchar("key", { length: 255 }).notNull().unique(),
 		createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),

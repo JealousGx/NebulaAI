@@ -2,16 +2,20 @@ import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	boolean,
 	mysqlTable,
-	serial,
 	uniqueIndex,
 	varchar,
 } from "drizzle-orm/mysql-core"
+
+import { prefixedId } from "@/lib/id"
+
 import { user } from "./auth"
 
 export const notificationSettings = mysqlTable(
 	"notification_settings",
 	{
-		id: serial("id").primaryKey(),
+		id: varchar("id", { length: 36 })
+			.primaryKey()
+			.$defaultFn(() => prefixedId("notif")),
 		emailNotifications: boolean("email_notifications").default(true).notNull(),
 		costLimitAlerts: boolean("cost_limit_alerts").default(true).notNull(),
 		errorRateAlerts: boolean("error_rate_alerts").default(true).notNull(),

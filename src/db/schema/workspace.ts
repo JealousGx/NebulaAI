@@ -2,17 +2,21 @@ import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	boolean,
 	mysqlTable,
-	serial,
 	text,
 	uniqueIndex,
 	varchar,
 } from "drizzle-orm/mysql-core"
+
+import { prefixedId } from "@/lib/id"
+
 import { user } from "./auth"
 
 export const workspace = mysqlTable(
 	"workspace",
 	{
-		id: serial("id").primaryKey(),
+		id: varchar("id", { length: 32 })
+			.primaryKey()
+			.$defaultFn(() => prefixedId("ws")),
 		name: varchar("name", { length: 255 }).notNull(),
 		webhookUrl: text("webhook_url"),
 		autoDeleteLogs: boolean("auto_delete_logs").default(true).notNull(),

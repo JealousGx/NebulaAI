@@ -1,28 +1,30 @@
 import { type InferSelectModel, relations } from "drizzle-orm"
 import {
-	bigint,
 	decimal,
 	index,
 	int,
 	mysqlTable,
-	serial,
 	text,
 	timestamp,
 	varchar,
 } from "drizzle-orm/mysql-core"
+
+import { prefixedId } from "@/lib/id"
+
 import { user } from "./auth"
 import { endpoint } from "./endpoints"
 
 export const activityLog = mysqlTable(
 	"activity_log",
 	{
-		id: serial("id").primaryKey(),
+		id: varchar("id", { length: 36 })
+			.primaryKey()
+			.$defaultFn(() => prefixedId("act")),
 		timestamp: timestamp("timestamp", { fsp: 3 }).defaultNow().notNull(),
 		method: varchar("method", { length: 10 }).notNull(),
-		endpointId: bigint("endpoint_id", {
-			mode: "number",
-			unsigned: true,
-		}).references(() => endpoint.id),
+		endpointId: varchar("endpoint_id", { length: 36 }).references(
+			() => endpoint.id,
+		),
 		status: int("status").notNull(),
 		latency: int("latency").notNull(),
 		cost: decimal("cost", { precision: 10, scale: 4 }).notNull(),

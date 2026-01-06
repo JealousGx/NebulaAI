@@ -3,17 +3,21 @@ import {
 	index,
 	mysqlEnum,
 	mysqlTable,
-	serial,
 	text,
 	timestamp,
 	varchar,
 } from "drizzle-orm/mysql-core"
+
+import { prefixedId } from "@/lib/id"
+
 import { user } from "./auth"
 
 export const endpoint = mysqlTable(
 	"endpoint",
 	{
-		id: serial("id").primaryKey(),
+		id: varchar("id", { length: 36 })
+			.primaryKey()
+			.$defaultFn(() => prefixedId("ep")),
 		name: varchar("name", { length: 255 }).notNull(),
 		provider: varchar("provider", { length: 255 }).notNull(),
 		model: varchar("model", { length: 255 }).notNull(),

@@ -1,19 +1,22 @@
 import {
-	bigint,
 	mysqlTable,
-	serial,
 	text,
 	timestamp,
 	uniqueIndex,
+	varchar,
 } from "drizzle-orm/mysql-core"
+
+import { prefixedId } from "@/lib/id"
 
 import { endpoint } from "./endpoints"
 
 export const modelApiKey = mysqlTable(
 	"model_api_key",
 	{
-		id: serial("id").primaryKey(),
-		endpointId: bigint("endpoint_id", { mode: "number", unsigned: true })
+		id: varchar("id", { length: 36 })
+			.primaryKey()
+			.$defaultFn(() => prefixedId("mdl_api")),
+		endpointId: varchar("endpoint_id", { length: 36 })
 			.notNull()
 			.references(() => endpoint.id, { onDelete: "cascade" }),
 		encryptedKey: text("encrypted_key").notNull(),
