@@ -1,4 +1,6 @@
 import { MutationCache, QueryClient } from "@tanstack/react-query"
+import { createIsomorphicFn } from "@tanstack/react-start"
+import { getRequestHeaders } from "@tanstack/react-start/server"
 import { createTRPCClient, httpBatchStreamLink } from "@trpc/client"
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query"
 import superjson from "superjson"
@@ -16,11 +18,16 @@ function getUrl() {
 	return `${base}/api/trpc`
 }
 
+const headers = createIsomorphicFn()
+	.client(() => ({}))
+	.server(() => getRequestHeaders())
+
 export const trpcClient = createTRPCClient<TRPCRouter>({
 	links: [
 		httpBatchStreamLink({
 			transformer: superjson,
 			url: getUrl(),
+			headers,
 		}),
 	],
 })
