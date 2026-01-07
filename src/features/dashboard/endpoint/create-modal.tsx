@@ -1,5 +1,5 @@
 import { useStore } from "@tanstack/react-form"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { Check, Copy, Sparkles, X } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import React, { useState } from "react"
@@ -36,17 +36,12 @@ export function CreateEndpointModal({
 	const [generatedUrl, setGeneratedUrl] = useState("")
 	const [copied, setCopied] = useState(false)
 
-	const queryClient = useQueryClient()
 	const trpc = useTRPC()
 
 	const mutation = useMutation({
 		...trpc.endpoints.create.mutationOptions(),
 		meta: {
 			invalidateQueryKey: ["endpoints"],
-		},
-		// fallback until automatic invalidation works
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["endpoints"] })
 		},
 	})
 
