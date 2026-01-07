@@ -6,60 +6,31 @@ import { Line, LineChart, ResponsiveContainer } from "recharts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
+import type { Endpoint } from "@/types"
+
 const mockSparklineData = (base: number) =>
 	Array.from({ length: 24 }, (_) => ({
 		value: base + Math.random() * 100 - 50,
 	}))
 
-const endpoints = [
-	{
-		id: 1,
-		name: "gpt-4-turbo",
-		provider: "OpenAI",
-		status: "active",
-		requests: 4281,
-		sparkline: mockSparklineData(150),
-	},
-	{
-		id: 2,
-		name: "stable-diffusion-xl",
-		provider: "Replicate",
-		status: "active",
-		requests: 1842,
-		sparkline: mockSparklineData(80),
-	},
-	{
-		id: 3,
-		name: "llama-3-70b",
-		provider: "Hugging Face",
-		status: "active",
-		requests: 3156,
-		sparkline: mockSparklineData(120),
-	},
-	{
-		id: 4,
-		name: "whisper-large-v3",
-		provider: "OpenAI",
-		status: "error",
-		requests: 892,
-		sparkline: mockSparklineData(40),
-	},
-	{
-		id: 5,
-		name: "claude-3-opus",
-		provider: "Anthropic",
-		status: "active",
-		requests: 2164,
-		sparkline: mockSparklineData(90),
-	},
-]
+interface IEndpointsTable {
+	endpoints?: Endpoint[]
+}
 
-export function EndpointsTable() {
-	const [selectedEndpoint, setSelectedEndpoint] = useState<number | null>(null)
+export function EndpointsTable({ endpoints }: IEndpointsTable) {
+	const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null)
 	const [isEditing, setIsEditing] = useState(false)
 	const [newName, setNewName] = useState("")
 
-	const handleEdit = (id: number) => {
+	if (!endpoints || endpoints.length === 0) {
+		return (
+			<div className="p-6 text-center text-muted-foreground">
+				No endpoints found. Create a new endpoint to get started.
+			</div>
+		)
+	}
+
+	const handleEdit = (id: string) => {
 		setSelectedEndpoint(id)
 		setIsEditing(true)
 		const endpoint = endpoints.find((e) => e.id === id)
@@ -177,11 +148,22 @@ export function EndpointsTable() {
 									{endpoint.provider}
 								</td>
 								<td className="px-6 py-4">
-									{endpoint.requests.toLocaleString()}
+									{/* {endpoint.requests.toLocaleString()} */}
+									{
+										// random number between 800 and 4500
+										(
+											Math.floor(Math.random() * (4500 - 800 + 1)) + 800
+										).toLocaleString()
+									}
 								</td>
 								<td className="px-6 py-4">
 									<ResponsiveContainer width={80} height={30}>
-										<LineChart data={endpoint.sparkline}>
+										{/* <LineChart data={endpoint.sparkline}> */}
+										<LineChart
+											data={mockSparklineData(
+												Math.floor(Math.random() * (150 - 80 + 1)) + 80,
+											)}
+										>
 											<Line
 												type="monotone"
 												dataKey="value"
