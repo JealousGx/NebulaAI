@@ -1,9 +1,12 @@
-import { MutationCache, QueryClient } from "@tanstack/react-query"
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
 import { createIsomorphicFn } from "@tanstack/react-start"
 import { getRequestHeaders } from "@tanstack/react-start/server"
 import { createTRPCClient, httpBatchStreamLink } from "@trpc/client"
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query"
+import { toast } from "sonner"
 import superjson from "superjson"
+
+import { Button } from "@/components/ui/button"
 
 import { env } from "@/env"
 
@@ -38,11 +41,28 @@ export function getContext() {
 			dehydrate: { serializeData: superjson.serialize },
 			hydrate: { deserializeData: superjson.deserialize },
 		},
+		queryCache: new QueryCache({
+			onError: (error, query) => {
+				toast.error(`Error: ${error.message}`, {
+					action: (
+						<Button className="ml-auto" onClick={query.invalidate} size="sm">
+							Retry
+						</Button>
+					),
+				})
+			},
+		}),
 		mutationCache: new MutationCache({
 			onSettled: async (_data, _error, _vars, _context, mutation) => {
+				console.log(_data, _error, _vars, _context, mutation)
 				const meta = mutation.meta as {
 					invalidateQueryKey?: unknown[]
 				}
+
+				console.log(
+					"Invalidating query key in onSettled:",
+					meta.invalidateQueryKey,
+				)
 
 				if (meta.invalidateQueryKey) {
 					await queryClient.invalidateQueries({
@@ -50,6 +70,17 @@ export function getContext() {
 					})
 				}
 			},
+			onSuccess: (_data, _vars, _res, mutation) => {
+				const meta = mutation.meta as {
+					invalidateQueryKey?: unknown[]
+				}
+
+				console.log(
+					"Invalidating query key in onSuccess:",
+					meta.invalidateQueryKey,
+				)
+			},
+			onError: console.log,
 		}),
 	})
 
