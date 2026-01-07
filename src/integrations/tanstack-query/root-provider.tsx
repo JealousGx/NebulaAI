@@ -97,20 +97,7 @@ export function getContext() {
 			mutations: {
 				async onSuccess(opts) {
 					await opts.originalFn()
-					const meta = opts.meta as {
-						invalidateQueryKey?: unknown[]
-					}
-
-					console.log(
-						"Invalidating query key in overrides onSuccess:",
-						meta?.invalidateQueryKey,
-					)
-
-					if (meta?.invalidateQueryKey) {
-						await opts.queryClient.invalidateQueries({
-							queryKey: meta.invalidateQueryKey,
-						})
-					}
+					await opts.queryClient.invalidateQueries()
 				},
 			},
 		},
