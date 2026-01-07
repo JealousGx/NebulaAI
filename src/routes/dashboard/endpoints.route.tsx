@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { Plus, Search } from "lucide-react"
 import { motion } from "motion/react"
@@ -21,12 +22,26 @@ import {
 	useCreateEndpointModalState,
 } from "@/hooks/modals/use-create-endpoint-modal"
 
+import { useTRPC } from "@/integrations/trpc/react"
+
+import type { Endpoint } from "@/types"
+
 export const Route = createFileRoute("/dashboard/endpoints")({
+	beforeLoad: ({ context }) =>
+		context.queryClient.ensureQueryData(
+			context.trpc.endpoints.list.queryOptions(),
+		),
 	component: RouteComponent,
 })
 
 function RouteComponent() {
 	const { isOpen } = useCreateEndpointModalState()
+	const trpc = useTRPC()
+
+	const { data: endpoints } = useQuery({
+		...trpc.endpoints.list.queryOptions(),
+		select: (data) => data satisfies Endpoint[],
+	})
 
 	return (
 		<div>
@@ -91,7 +106,7 @@ function RouteComponent() {
 					</div>
 				</motion.div>
 
-				<EndpointsTable />
+				<EndpointsTable endpoints={endpoints} />
 			</main>
 
 			<CreateEndpointModal isOpen={isOpen} onClose={closeCreateEndpointModal} />
