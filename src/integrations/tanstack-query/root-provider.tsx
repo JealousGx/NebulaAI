@@ -60,7 +60,7 @@ export function getContext() {
 				}
 
 				console.log(
-					"Invalidating query key in onSettled:",
+					"Invalidating query key in onSettled from mutationCache:",
 					meta.invalidateQueryKey,
 				)
 
@@ -70,15 +70,21 @@ export function getContext() {
 					})
 				}
 			},
-			onSuccess: (_data, _vars, _res, mutation) => {
+			onSuccess: async (_data, _vars, _res, mutation) => {
 				const meta = mutation.meta as {
 					invalidateQueryKey?: unknown[]
 				}
 
 				console.log(
-					"Invalidating query key in onSuccess:",
+					"Invalidating query key in onSuccess from mutationCache:",
 					meta.invalidateQueryKey,
 				)
+
+				if (meta?.invalidateQueryKey) {
+					await queryClient.invalidateQueries({
+						queryKey: meta.invalidateQueryKey,
+					})
+				}
 			},
 			onError: console.log,
 		}),
@@ -87,6 +93,27 @@ export function getContext() {
 	const serverHelpers = createTRPCOptionsProxy({
 		client: trpcClient,
 		queryClient: queryClient,
+		overrides: {
+			mutations: {
+				async onSuccess(opts) {
+					await opts.originalFn()
+					const meta = opts.meta as {
+						invalidateQueryKey?: unknown[]
+					}
+
+					console.log(
+						"Invalidating query key in overrides onSuccess:",
+						meta?.invalidateQueryKey,
+					)
+
+					if (meta?.invalidateQueryKey) {
+						await opts.queryClient.invalidateQueries({
+							queryKey: meta.invalidateQueryKey,
+						})
+					}
+				},
+			},
+		},
 	})
 	return {
 		queryClient,
