@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "@/db"
@@ -17,6 +17,7 @@ export const endpointsRouter = createTRPCRouter({
 			.select()
 			.from(endpoint)
 			.where(eq(endpoint.userId, ctx.session.user.id))
+			.orderBy(desc(endpoint.createdAt))
 	}),
 	create: protectedProcedure
 		.input(
