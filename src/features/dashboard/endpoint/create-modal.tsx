@@ -41,7 +41,7 @@ export function CreateEndpointModal({
 	const mutation = useMutation({
 		...trpc.endpoints.create.mutationOptions(),
 		meta: {
-			invalidateQueryKey: ["endpoints"],
+			invalidateQueryKey: [["endpoints"]],
 		},
 	})
 
@@ -86,6 +86,8 @@ export function CreateEndpointModal({
 				.unwrap()
 
 			setGeneratedUrl(`${APP_URL}/proxy/${created.id}`)
+
+			form.reset()
 
 			onClose()
 		},
