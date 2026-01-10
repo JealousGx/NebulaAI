@@ -20,6 +20,23 @@ import {
 } from "@/hooks/modals/use-create-endpoint-modal"
 
 export const Route = createFileRoute("/dashboard/")({
+	beforeLoad: ({ context }) => {
+		context.queryClient.ensureQueryData(
+			context.trpc.stats.getDashboardStats.queryOptions(),
+		)
+		context.queryClient.ensureQueryData(
+			context.trpc.activityLog.list.queryOptions({}),
+		)
+		context.queryClient.ensureQueryData(
+			context.trpc.stats.getRequestCostTrend.queryOptions({ days: 7 }),
+		)
+		context.queryClient.ensureQueryData(
+			context.trpc.stats.getLatencyTrend.queryOptions({ hours: 24 }),
+		)
+		context.queryClient.ensureQueryData(
+			context.trpc.endpoints.list.queryOptions(),
+		)
+	},
 	component: RouteComponent,
 })
 
