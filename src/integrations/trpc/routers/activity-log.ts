@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { and, eq, gte, like, lte } from "drizzle-orm"
 import { z } from "zod"
 
 import { db } from "@/db"
@@ -8,16 +8,64 @@ import { activityLog } from "@/db/schema"
 import { createTRPCRouter, protectedProcedure } from "../init"
 
 export const activityLogRouter = createTRPCRouter({
-	list: protectedProcedure.query(async ({ ctx }) => {
-		if (!ctx.session?.user?.id) {
-			throw new TRPCError({ code: "UNAUTHORIZED" })
-		}
-		return await db
-			.select()
-			.from(activityLog)
-			.where(eq(activityLog.userId, ctx.session.user.id))
-			.orderBy(activityLog.createdAt)
-	}),
+	list: protectedProcedure
+		.input(
+			z.object({
+				limit: z.number().min(1).max(100).default(10),
+				offset: z.number().min(0).default(0),
+				statusFilter: z
+					.enum(["all", "2xx", "4xx", "5xx"])
+					.default("all")
+					.optional(),
+				searchQuery: z.string().optional(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			if (!ctx.session?.user?.id) {
+				throw new TRPCError({ code: "UNAUTHORIZED" })
+			}
+
+			const { limit, offset, statusFilter, searchQuery } = input
+
+			const whereConditions = [eq(activityLog.userId, ctx.session.user.id)]
+
+			if (statusFilter === "2xx") {
+				whereConditions.push(
+					gte(activityLog.status, 200),
+					lte(activityLog.status, 299),
+				)
+			} else if (statusFilter === "4xx") {
+				whereConditions.push(
+					gte(activityLog.status, 400),
+					lte(activityLog.status, 499),
+				)
+			} else if (statusFilter === "5xx") {
+				whereConditions.push(
+					gte(activityLog.status, 500),
+					lte(activityLog.status, 599),
+				)
+			}
+
+			if (searchQuery) {
+				whereConditions.push(
+					like(activityLog.request, `%${searchQuery}%`),
+					like(activityLog.response, `%${searchQuery}%`),
+					like(activityLog.endpointId, `%${searchQuery}%`),
+					like(activityLog.method, `%${searchQuery}%`),
+					like(activityLog.ip, `%${searchQuery}%`),
+				)
+			}
+
+			const logs = await db
+				.select()
+				.from(activityLog)
+				.where(and(...whereConditions))
+				.orderBy(activityLog.createdAt)
+				.limit(limit)
+				.offset(offset)
+
+			return logs
+		}),
 	add: protectedProcedure
 		.input(
 			z.object({
