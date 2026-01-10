@@ -201,12 +201,22 @@ code {
 }
 
 @layer utilities {
-  label:has(+ :required)::after {
+  label:has(~ :required)::after {
     content: "*";
     color: red;
     margin-bottom: 0.1875rem;
   }
-  label:has(+ :required) {
+  label:has(~ :required) {
+    gap: 0.125rem;
+  }
+
+  /* rule for labels inside a div wrapper (when tooltip is present) */
+  div:has(label):has(~ :required) label::after {
+    content: "*";
+    color: red;
+    margin-bottom: 0.1875rem;
+  }
+  div:has(label):has(~ :required) label {
     gap: 0.125rem;
   }
 
