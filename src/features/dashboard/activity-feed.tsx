@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import {
 	Activity as ActivityIcon,
 	CheckCircle,
@@ -5,95 +6,18 @@ import {
 	XCircle,
 } from "lucide-react"
 import { motion } from "motion/react"
-import { useEffect, useState } from "react"
 
-interface Activity {
-	id: number
-	timestamp: string
-	method: string
-	endpoint: string
-	status: number
-	latency: number
-}
-
-const initialActivities: Activity[] = [
-	{
-		id: 1,
-		timestamp: "14:32:41",
-		method: "POST",
-		endpoint: "/proxy/gpt-4-turbo",
-		status: 200,
-		latency: 342,
-	},
-	{
-		id: 2,
-		timestamp: "14:32:38",
-		method: "POST",
-		endpoint: "/proxy/stable-diffusion-xl",
-		status: 200,
-		latency: 1820,
-	},
-	{
-		id: 3,
-		timestamp: "14:32:35",
-		method: "POST",
-		endpoint: "/proxy/llama-3-70b",
-		status: 200,
-		latency: 287,
-	},
-	{
-		id: 4,
-		timestamp: "14:32:31",
-		method: "POST",
-		endpoint: "/proxy/whisper-large-v3",
-		status: 502,
-		latency: 5000,
-	},
-	{
-		id: 5,
-		timestamp: "14:32:28",
-		method: "POST",
-		endpoint: "/proxy/claude-3-opus",
-		status: 200,
-		latency: 412,
-	},
-	{
-		id: 6,
-		timestamp: "14:32:24",
-		method: "POST",
-		endpoint: "/proxy/gpt-4-turbo",
-		status: 200,
-		latency: 298,
-	},
-	{
-		id: 7,
-		timestamp: "14:32:19",
-		method: "POST",
-		endpoint: "/proxy/stable-diffusion-xl",
-		status: 200,
-		latency: 1654,
-	},
-]
+import { useTRPC } from "@/integrations/trpc/react"
 
 export function ActivityFeed() {
-	const [activities, setActivities] = useState(initialActivities)
+	const trpc = useTRPC()
+	const { data: activities, isLoading } = useQuery(
+		trpc.activityLog.list.queryOptions({}),
+	)
 
-	useEffect(() => {
-		const interval = setInterval(() => {
-			const newActivity: Activity = {
-				id: Date.now(),
-				timestamp: new Date().toLocaleTimeString("en-US", { hour12: false }),
-				method: "POST",
-				endpoint: `/proxy/${["gpt-4-turbo", "stable-diffusion-xl", "llama-3-70b", "claude-3-opus"][Math.floor(Math.random() * 4)]}`,
-				status: Math.random() > 0.9 ? 502 : 200,
-				latency: Math.floor(Math.random() * 2000) + 200,
-			}
-
-			setActivities((prev) => [newActivity, ...prev.slice(0, 9)])
-		}, 3000)
-
-		return () => clearInterval(interval)
-	}, [])
+	if (isLoading) {
+		return <div>Loading activity feed...</div>
+	}
 
 	return (
 		<motion.div
@@ -121,7 +45,7 @@ export function ActivityFeed() {
 			</div>
 
 			<div className="flex-1 overflow-y-auto space-y-2 scrollbar-thin pr-1 md:pr-2">
-				{activities.map((activity) => (
+				{activities?.map((activity) => (
 					<motion.div
 						key={activity.id}
 						initial={{ opacity: 0, x: -20 }}
@@ -131,12 +55,12 @@ export function ActivityFeed() {
 					>
 						<div
 							className={`shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center ${
-								activity.status === 200
+								activity.status >= 200 && activity.status < 300
 									? "bg-chart-2/10 text-chart-2"
 									: "bg-destructive/10 text-destructive"
 							}`}
 						>
-							{activity.status === 200 ? (
+							{activity.status >= 200 && activity.status < 300 ? (
 								<CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
 							) : (
 								<XCircle className="h-3 w-3 md:h-4 md:w-4" />
@@ -146,24 +70,30 @@ export function ActivityFeed() {
 						<div className="flex-1 min-w-0">
 							<div className="flex flex-wrap items-center gap-1 md:gap-2 text-xs md:text-sm mb-1 md:mb-1.5">
 								<span className="text-muted-foreground">
-									{activity.timestamp}
+									{new Date(activity.createdAt).toLocaleTimeString("en-US", {
+										hour12: false,
+									})}
 								</span>
 								<span className="px-1.5 md:px-2 py-0.5 rounded bg-chart-3/10 text-chart-3 text-xs">
 									{activity.method}
 								</span>
 							</div>
 							<div className="text-xs md:text-sm truncate group-hover:text-primary transition-colors mb-1 md:mb-2">
-								{activity.endpoint}
+								{/* Placeholder for endpoint name - activityLog only stores endpointId */}
+								Endpoint ID: {activity.endpointId}
 							</div>
 							<div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
 								<span
 									className={`px-1.5 md:px-2 py-0.5 rounded-full ${
-										activity.status === 200
+										activity.status >= 200 && activity.status < 300
 											? "bg-chart-2/10 text-chart-2"
 											: "bg-destructive/10 text-destructive"
 									}`}
 								>
-									{activity.status} {activity.status === 200 ? "OK" : "ERROR"}
+									{activity.status}{" "}
+									{activity.status >= 200 && activity.status < 300
+										? "OK"
+										: "ERROR"}
 								</span>
 								<span className="text-muted-foreground flex items-center gap-1">
 									<Clock className="h-2.5 w-2.5 md:h-3 md:w-3" />
