@@ -103,7 +103,7 @@ export function DashboardSidebar() {
 				<div className="mt-auto space-y-4">
 					<UserProfileDropdown />
 
-					<div className="glass rounded-lg p-4 border border-border">
+					{/* <div className="glass rounded-lg p-4 border border-border">
 						<div className="text-sm text-muted-foreground mb-1">
 							API Credits
 						</div>
@@ -111,7 +111,7 @@ export function DashboardSidebar() {
 						<div className="h-1 bg-muted rounded-full overflow-hidden">
 							<div className="h-full bg-primary w-[65%]" />
 						</div>
-					</div>
+					</div> */}
 				</div>
 			</motion.aside>
 		</React.Fragment>
