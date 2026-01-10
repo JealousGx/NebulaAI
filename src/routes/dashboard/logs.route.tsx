@@ -1,7 +1,9 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { Download, Pause, Play, Search, Terminal, Trash2 } from "lucide-react"
 import { motion } from "motion/react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,50 +15,96 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 
+import { LogItem } from "@/features/dashboard/log-item"
+
+import { useDebounce } from "@/hooks/use-debounce"
+
+import { useTRPC } from "@/integrations/trpc/react"
+
+import type { ActivityLog } from "@/types"
+
+const LOG_LIMIT = 100
+
 export const Route = createFileRoute("/dashboard/logs")({
+	beforeLoad: ({ context }) => {
+		context.queryClient.ensureQueryData(
+			context.trpc.activityLog.list.queryOptions({
+				limit: LOG_LIMIT,
+				offset: 0,
+			}),
+		)
+	},
 	component: RouteComponent,
 })
 
-interface LogEntry {
-	id: number
-	timestamp: string
-	endpoint: string
-	method: string
-	status: number
-	latency: number
-	ip: string
-	request: string
-	response: string
-}
-
-const generateLog = (): LogEntry => ({
-	id: Date.now(),
-	timestamp: new Date().toISOString(),
-	endpoint: `/proxy/${["gpt-4-turbo", "stable-diffusion-xl", "llama-3-70b", "claude-3-opus"][Math.floor(Math.random() * 4)]}`,
-	method: "POST",
-	status: Math.random() > 0.9 ? 502 : 200,
-	latency: Math.floor(Math.random() * 2000) + 200,
-	ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-	request: '{"prompt": "Generate an image of..."}',
-	response: '{"status": "success", "result": "..."}',
-})
-
 function RouteComponent() {
-	const [logs, setLogs] = useState<LogEntry[]>(
-		Array.from({ length: 20 }, generateLog).reverse(),
-	)
 	const [isPaused, setIsPaused] = useState(false)
-	const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null)
+	const [selectedLog, setSelectedLog] = useState<ActivityLog | null>(null)
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "2xx" | "4xx" | "5xx"
+	>("all")
+	const [searchQuery, setSearchQuery] = useState("")
 
+	const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
+	const trpc = useTRPC()
+
+	const {
+		data: logs,
+		isLoading,
+		refetch,
+	} = useQuery(
+		trpc.activityLog.list.queryOptions(
+			{
+				limit: LOG_LIMIT,
+				offset: 0,
+				statusFilter,
+				searchQuery: debouncedSearchQuery,
+			},
+			{
+				refetchInterval: isPaused ? false : 3000, // Refetch every 3 seconds if not paused
+			},
+		),
+	)
+
+	// Effect to update selectedLog if the current selectedLog is no longer in the list (e.g., cleared or filtered out)
 	useEffect(() => {
-		if (isPaused) return
+		if (selectedLog && logs && !logs.some((log) => log.id === selectedLog.id)) {
+			setSelectedLog(null)
+		}
+	}, [logs, selectedLog])
 
-		const interval = setInterval(() => {
-			setLogs((prev) => [generateLog(), ...prev.slice(0, 99)])
-		}, 2000)
+	const clearLogs = () => {
+		// This clears the displayed logs, but doesn't delete them from the DB.
+		setSelectedLog(null)
+		refetch() // Refetch to show an empty or new list based on filters
+	}
 
-		return () => clearInterval(interval)
-	}, [isPaused])
+	const parentRef = useRef<HTMLDivElement>(null)
+
+	const rowVirtualizer = useVirtualizer({
+		count: logs?.length || 0,
+		getScrollElement: () => parentRef.current,
+		estimateSize: () => 105,
+		overscan: 5,
+	})
+
+	const { formattedRequest, formattedResponse } = useMemo(() => {
+		try {
+			const formattedRequest = selectedLog?.request
+				? JSON.stringify(JSON.parse(selectedLog.request), null, 2)
+				: "N/A"
+			const formattedResponse = selectedLog?.response
+				? JSON.stringify(JSON.parse(selectedLog.response), null, 2)
+				: "N/A"
+			return { formattedRequest, formattedResponse }
+		} catch {
+			return {
+				formattedRequest: "Error parsing request",
+				formattedResponse: "Error parsing response",
+			}
+		}
+	}, [selectedLog])
 
 	return (
 		<div>
@@ -96,7 +144,7 @@ function RouteComponent() {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => setLogs([])}
+							onClick={clearLogs}
 							className="glass border-border hover:border-destructive"
 						>
 							<Trash2 className="h-4 w-4 mr-2" />
@@ -119,9 +167,16 @@ function RouteComponent() {
 							<Input
 								placeholder="Filter logs..."
 								className="pl-10 bg-background/40 border-border"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
 							/>
 						</div>
-						<Select defaultValue="all">
+						<Select
+							value={statusFilter}
+							onValueChange={(value) =>
+								setStatusFilter(value as "all" | "2xx" | "4xx" | "5xx")
+							}
+						>
 							<SelectTrigger className="w-[180px] bg-background/40 border-border">
 								<SelectValue placeholder="Filter by status" />
 							</SelectTrigger>
@@ -148,61 +203,40 @@ function RouteComponent() {
 									className={`w-2 h-2 rounded-full ${isPaused ? "bg-muted" : "bg-chart-2 animate-pulse"}`}
 								/>
 								<span className="text-sm text-muted-foreground">
-									{isPaused ? "Paused" : "Live"} • {logs.length} entries
+									{isPaused ? "Paused" : "Live"} • {logs?.length || 0} entries
 								</span>
 							</div>
 						</div>
 
-						<div className="h-[calc(100vh-350px)] overflow-y-auto">
-							<div className="divide-y divide-border/50">
-								{logs.map((log) => (
-									<motion.div
-										key={log.id}
-										initial={{ opacity: 0, x: -20 }}
-										animate={{ opacity: 1, x: 0 }}
-										transition={{ duration: 0.3 }}
-										onClick={() => setSelectedLog(log)}
-										className={`p-4 hover:bg-accent/30 cursor-pointer transition-colors ${
-											selectedLog?.id === log.id ? "bg-accent/30" : ""
-										}`}
-									>
-										<div className="flex items-start gap-3">
-											<div
-												className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-													log.status >= 200 && log.status < 300
-														? "bg-chart-2"
-														: "bg-destructive"
-												}`}
+						<div
+							ref={parentRef}
+							className="h-[calc(100vh-350px)] overflow-y-auto"
+						>
+							<div
+								className="relative divide-y divide-border/50"
+								style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+							>
+								{isLoading ? (
+									<div className="p-4 text-center text-muted-foreground">
+										Loading logs...
+									</div>
+								) : (
+									rowVirtualizer.getVirtualItems().map((virtualItem) => {
+										const log = logs?.[virtualItem.index]
+										if (!log) return null
+
+										return (
+											<LogItem
+												key={log.id}
+												log={log}
+												isSelected={selectedLog?.id === log.id}
+												virtualItem={virtualItem}
+												onSelect={setSelectedLog}
+												measureRef={rowVirtualizer.measureElement}
 											/>
-											<div className="flex-1 min-w-0">
-												<div className="flex items-center gap-3 mb-1">
-													<span className="text-xs text-muted-foreground">
-														{new Date(log.timestamp).toLocaleTimeString()}
-													</span>
-													<span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">
-														{log.method}
-													</span>
-													<span
-														className={`text-xs px-2 py-0.5 rounded ${
-															log.status >= 200 && log.status < 300
-																? "bg-chart-2/20 text-chart-2"
-																: "bg-destructive/20 text-destructive"
-														}`}
-													>
-														{log.status}
-													</span>
-													<span className="text-xs text-muted-foreground">
-														{log.latency}ms
-													</span>
-												</div>
-												<div className="text-sm truncate">{log.endpoint}</div>
-												<div className="text-xs text-muted-foreground mt-1">
-													{log.ip}
-												</div>
-											</div>
-										</div>
-									</motion.div>
-								))}
+										)
+									})
+								)}
 							</div>
 						</div>
 					</motion.div>
@@ -225,7 +259,7 @@ function RouteComponent() {
 											Timestamp
 										</div>
 										<div className="text-sm bg-background/40 p-3 rounded border border-border">
-											{new Date(selectedLog.timestamp).toLocaleString()}
+											{new Date(selectedLog.createdAt).toLocaleString()}
 										</div>
 									</div>
 
@@ -234,7 +268,7 @@ function RouteComponent() {
 											Endpoint
 										</div>
 										<div className="text-sm bg-background/40 p-3 rounded border border-border">
-											{selectedLog.endpoint}
+											{selectedLog.endpointId}
 										</div>
 									</div>
 
@@ -243,7 +277,7 @@ function RouteComponent() {
 											Request Body
 										</div>
 										<pre className="text-xs bg-background/40 p-3 rounded border border-border overflow-x-auto">
-											{JSON.stringify(JSON.parse(selectedLog.request), null, 2)}
+											{formattedRequest}
 										</pre>
 									</div>
 
@@ -252,11 +286,7 @@ function RouteComponent() {
 											Response Body
 										</div>
 										<pre className="text-xs bg-background/40 p-3 rounded border border-border overflow-x-auto">
-											{JSON.stringify(
-												JSON.parse(selectedLog.response),
-												null,
-												2,
-											)}
+											{formattedResponse}
 										</pre>
 									</div>
 
