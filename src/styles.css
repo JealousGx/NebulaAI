@@ -201,6 +201,15 @@ code {
 }
 
 @layer utilities {
+  label:has(+ :required)::after {
+    content: "*";
+    color: red;
+    margin-bottom: 0.1875rem;
+  }
+  label:has(+ :required) {
+    gap: 0.125rem;
+  }
+
   .glass {
     background: rgba(24, 24, 27, 0.4);
     backdrop-filter: blur(16px);
