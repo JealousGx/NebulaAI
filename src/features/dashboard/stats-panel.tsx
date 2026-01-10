@@ -1,45 +1,52 @@
+import { useQuery } from "@tanstack/react-query"
 import { ArrowDownRight, ArrowUpRight } from "lucide-react"
 import { motion } from "motion/react"
 
-const stats = [
-	{
-		label: "Total Requests (30d)",
-		value: "24,891",
-		change: "+12.3%",
-		isPositive: true,
-		rawChange: 2734,
-	},
-	{
-		label: "Total Cost (30d)",
-		value: "$147.23",
-		change: "-5.2%",
-		isPositive: true,
-		rawChange: -8.12,
-	},
-	{
-		label: "Active Endpoints",
-		value: "8",
-		change: "+2",
-		isPositive: true,
-		rawChange: 2,
-	},
-	{
-		label: "Error Rate",
-		value: "0.3%",
-		change: "-0.1%",
-		isPositive: true,
-		rawChange: -0.1,
-	},
-	{
-		label: "Avg Latency",
-		value: "342ms",
-		change: "-18ms",
-		isPositive: true,
-		rawChange: -18,
-	},
-]
+import { useTRPC } from "@/integrations/trpc/react"
 
 export function StatsPanel() {
+	const trpc = useTRPC()
+	const { data: stats, isLoading } = useQuery(
+		trpc.stats.getDashboardStats.queryOptions(),
+	)
+
+	if (isLoading || !stats) {
+		return <div>Loading...</div>
+	}
+
+	const statsData = [
+		{
+			label: "Total Requests (30d)",
+			value: stats.totalRequests.value.toLocaleString(),
+			change: `${stats.totalRequests.change}%`,
+			isPositive: parseFloat(stats.totalRequests.change) >= 0,
+		},
+		{
+			label: "Total Cost (30d)",
+			value: `$${stats.totalCost.value}`,
+			change: `${stats.totalCost.change}%`,
+			isPositive: parseFloat(stats.totalCost.change) >= 0,
+		},
+		{
+			label: "Active Endpoints",
+			value: stats.activeEndpoints.toLocaleString(),
+			change: "",
+			isPositive: true,
+		},
+		{
+			label: "Error Rate",
+			value: `${stats.errorRate}%`,
+			change: "",
+			isPositive: parseFloat(stats.errorRate) <= 5,
+		},
+		{
+			label: "Avg Latency",
+			value: `${stats.avgLatency}ms`,
+			change: "",
+			isPositive: stats.avgLatency <= 500,
+		},
+	]
+
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -51,7 +58,7 @@ export function StatsPanel() {
 			<div className="absolute inset-0 bg-linear-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
 			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-0 md:divide-x divide-border relative z-10">
-				{stats.map((stat, index) => (
+				{statsData.map((stat, index) => (
 					<motion.div
 						key={stat.label}
 						initial={{ opacity: 0, y: 10 }}
@@ -68,19 +75,23 @@ export function StatsPanel() {
 						<div
 							className={`flex items-center gap-1 md:gap-1.5 text-xs md:text-sm ${stat.isPositive ? "text-chart-2" : "text-destructive"}`}
 						>
-							<div
-								className={`flex items-center justify-center w-4 h-4 md:w-5 md:h-5 rounded-full ${stat.isPositive ? "bg-chart-2/10" : "bg-destructive/10"}`}
-							>
-								{stat.isPositive ? (
-									<ArrowUpRight className="h-2.5 w-2.5 md:h-3 md:w-3" />
-								) : (
-									<ArrowDownRight className="h-2.5 w-2.5 md:h-3 md:w-3" />
-								)}
-							</div>
-							<span className="font-medium">{stat.change}</span>
-							<span className="text-xs text-muted-foreground hidden lg:inline">
-								vs last month
-							</span>
+							{stat.change && (
+								<>
+									<div
+										className={`flex items-center justify-center w-4 h-4 md:w-5 md:h-5 rounded-full ${stat.isPositive ? "bg-chart-2/10" : "bg-destructive/10"}`}
+									>
+										{stat.isPositive ? (
+											<ArrowUpRight className="h-2.5 w-2.5 md:h-3 md:w-3" />
+										) : (
+											<ArrowDownRight className="h-2.5 w-2.5 md:h-3 md:w-3" />
+										)}
+									</div>
+									<span className="font-medium">{stat.change}</span>
+									<span className="text-xs text-muted-foreground hidden lg:inline">
+										vs last month
+									</span>
+								</>
+							)}
 						</div>
 					</motion.div>
 				))}
