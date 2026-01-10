@@ -26,6 +26,7 @@ export const endpoint = mysqlTable(
 			.default("active")
 			.notNull(),
 		description: text("description"),
+		transformation: text("transformation"),
 		userId: varchar("user_id", { length: 36 })
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),

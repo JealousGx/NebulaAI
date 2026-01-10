@@ -25,6 +25,7 @@ type NewEndpoint = Omit<
 	"id" | "createdAt" | "updatedAt" | "userId" | "status"
 > & {
 	apiKey: string
+	transformation: string
 }
 
 const APP_URL = env.VITE_APP_URL
@@ -52,6 +53,7 @@ export function CreateEndpointModal({
 			model: "",
 			apiKey: "",
 			description: "",
+			transformation: "",
 		} satisfies NewEndpoint,
 		validators: {
 			onBlur: ({ value }) => {
@@ -170,6 +172,7 @@ export function CreateEndpointModal({
 												label="Endpoint Name"
 												placeholder="GPT-4 Turbo"
 												description="A friendly name to identify this endpoint"
+												required
 											/>
 										)}
 									</form.AppField>
@@ -181,6 +184,7 @@ export function CreateEndpointModal({
 													label="Provider"
 													placeholder="OpenAI"
 													description="The AI service provider (e.g., OpenAI, Anthropic)"
+													required
 												/>
 											)}
 										</form.AppField>
@@ -191,6 +195,7 @@ export function CreateEndpointModal({
 													label="Model"
 													placeholder="gpt-4-turbo"
 													description="The specific model to proxy (e.g., gpt-4-turbo)"
+													required
 												/>
 											)}
 										</form.AppField>
@@ -203,6 +208,22 @@ export function CreateEndpointModal({
 												placeholder="sk-..."
 												className="font-mono"
 												description="Your API key will be encrypted and stored securely"
+												required
+											/>
+										)}
+									</form.AppField>
+
+									<form.AppField name="transformation">
+										{(field) => (
+											<field.TextArea
+												label="Request Transformation (JSON)"
+												placeholder='{ "messages": [{"role": "user", "content": "{{prompt}}"}] }'
+												rows={5}
+												description="Define how the incoming request body should be transformed before sending to the AI model. Use JSON format. Use double curly braces {{...}} for dynamic values like 'prompt'."
+												required
+												labelProps={{
+													tooltip: "Use {{prompt}} to insert user input",
+												}}
 											/>
 										)}
 									</form.AppField>
