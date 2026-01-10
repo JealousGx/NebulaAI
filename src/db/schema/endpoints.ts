@@ -11,6 +11,7 @@ import {
 import { prefixedId } from "@/lib/id"
 
 import { user } from "./auth"
+import { modelApiKey } from "./model-api-key"
 
 export const endpoint = mysqlTable(
 	"endpoint",
@@ -41,6 +42,10 @@ export const endpointRelations = relations(endpoint, ({ one }) => ({
 	user: one(user, {
 		fields: [endpoint.userId],
 		references: [user.id],
+	}),
+	modelApiKey: one(modelApiKey, {
+		fields: [endpoint.id],
+		references: [modelApiKey.endpointId],
 	}),
 }))
 

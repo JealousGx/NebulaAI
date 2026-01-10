@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm"
 import {
 	mysqlTable,
 	text,
@@ -32,3 +33,10 @@ export const modelApiKey = mysqlTable(
 		),
 	}),
 )
+
+export const modelApiKeyRelations = relations(modelApiKey, ({ one }) => ({
+	endpoint: one(endpoint, {
+		fields: [modelApiKey.endpointId],
+		references: [endpoint.id],
+	}),
+}))
