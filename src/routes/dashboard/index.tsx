@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { Plus, TrendingUp } from "lucide-react"
 import { motion } from "motion/react"
@@ -12,12 +13,12 @@ import { EndpointsTable } from "@/features/dashboard/endpoints-table"
 import { StatsPanel } from "@/features/dashboard/stats-panel"
 import { SystemHealthWidget } from "@/features/dashboard/system-health-widget"
 import { UsageCharts } from "@/features/dashboard/usage-charts"
-
 import {
 	closeCreateEndpointModal,
 	openCreateEndpointModal,
 	useCreateEndpointModalState,
 } from "@/hooks/modals/use-create-endpoint-modal"
+import { useTRPC } from "@/integrations/trpc/react"
 
 export const Route = createFileRoute("/dashboard/")({
 	beforeLoad: ({ context }) => {
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/dashboard/")({
 			context.trpc.stats.getLatencyTrend.queryOptions({ hours: 24 }),
 		)
 		context.queryClient.ensureQueryData(
-			context.trpc.endpoints.list.queryOptions(),
+			context.trpc.endpoints.list.queryOptions({ limit: 20, offset: 0 }),
 		)
 	},
 	component: RouteComponent,
@@ -42,6 +43,11 @@ export const Route = createFileRoute("/dashboard/")({
 
 function RouteComponent() {
 	const { isOpen } = useCreateEndpointModalState()
+
+	const trpc = useTRPC()
+	const { data: endpoints } = useQuery(
+		trpc.endpoints.list.queryOptions({ limit: 20, offset: 0 }),
+	)
 
 	return (
 		<React.Fragment>
@@ -89,7 +95,7 @@ function RouteComponent() {
 				<UsageCharts />
 
 				<div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-4 md:gap-6">
-					<EndpointsTable />
+					<EndpointsTable endpoints={endpoints} />
 					<div className="space-y-4 md:space-y-6">
 						<ActivityFeed />
 						<SystemHealthWidget />
