@@ -9,16 +9,25 @@ import { encrypt } from "@/lib/encryption"
 import { createTRPCRouter, protectedProcedure } from "../init"
 
 export const endpointsRouter = createTRPCRouter({
-	list: protectedProcedure.query(async ({ ctx }) => {
-		if (!ctx.session?.user?.id) {
-			throw new TRPCError({ code: "UNAUTHORIZED" })
-		}
-		return await db
-			.select()
-			.from(endpoint)
-			.where(eq(endpoint.userId, ctx.session.user.id))
-			.orderBy(desc(endpoint.createdAt))
-	}),
+	list: protectedProcedure
+		.input(
+			z.object({
+				limit: z.number().min(1).max(100).optional(),
+				offset: z.number().min(0).optional(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			if (!ctx.session?.user?.id) {
+				throw new TRPCError({ code: "UNAUTHORIZED" })
+			}
+			return await db
+				.select()
+				.from(endpoint)
+				.where(eq(endpoint.userId, ctx.session.user.id))
+				.orderBy(desc(endpoint.createdAt))
+				.limit(input.limit ?? 20)
+				.offset(input.offset ?? 0)
+		}),
 	create: protectedProcedure
 		.input(
 			z.object({
