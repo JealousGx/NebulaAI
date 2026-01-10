@@ -173,6 +173,10 @@ export function CreateEndpointModal({
 												placeholder="GPT-4 Turbo"
 												description="A friendly name to identify this endpoint"
 												required
+												labelProps={{
+													tooltip:
+														"Enter a unique, descriptive name for your endpoint to distinguish it from others.",
+												}}
 											/>
 										)}
 									</form.AppField>
@@ -185,6 +189,10 @@ export function CreateEndpointModal({
 													placeholder="OpenAI"
 													description="The AI service provider (e.g., OpenAI, Anthropic)"
 													required
+													labelProps={{
+														tooltip:
+															"Specify the AI service provider, such as OpenAI, Anthropic, or Google. This determines the API endpoint.",
+													}}
 												/>
 											)}
 										</form.AppField>
@@ -196,6 +204,10 @@ export function CreateEndpointModal({
 													placeholder="gpt-4-turbo"
 													description="The specific model to proxy (e.g., gpt-4-turbo)"
 													required
+													labelProps={{
+														tooltip:
+															"Enter the exact model name from your provider, e.g., 'gpt-4-turbo' or 'claude-3-sonnet'.",
+													}}
 												/>
 											)}
 										</form.AppField>
@@ -209,6 +221,10 @@ export function CreateEndpointModal({
 												className="font-mono"
 												description="Your API key will be encrypted and stored securely"
 												required
+												labelProps={{
+													tooltip:
+														"Provide your API key from the provider. It will be encrypted and stored securely for authentication.",
+												}}
 											/>
 										)}
 									</form.AppField>
@@ -222,7 +238,8 @@ export function CreateEndpointModal({
 												description="Define how the incoming request body should be transformed before sending to the AI model. Use JSON format. Use double curly braces {{...}} for dynamic values like 'prompt'."
 												required
 												labelProps={{
-													tooltip: "Use {{prompt}} to insert user input",
+													tooltip:
+														"Define the JSON structure to transform incoming requests. Use {{prompt}} for user input, {{model}} for the model, etc. This maps your API to the provider's format.",
 												}}
 											/>
 										)}
