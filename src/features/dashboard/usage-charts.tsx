@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { Activity, BarChart3, Clock } from "lucide-react"
 import { motion } from "motion/react"
 import {
@@ -14,34 +15,7 @@ import {
 	YAxis,
 } from "recharts"
 
-const requestData = [
-	{ date: "Dec 3", requests: 2400, cost: 12.5 },
-	{ date: "Dec 4", requests: 1398, cost: 7.8 },
-	{ date: "Dec 5", requests: 9800, cost: 42.3 },
-	{ date: "Dec 6", requests: 3908, cost: 18.9 },
-	{ date: "Dec 7", requests: 4800, cost: 22.1 },
-	{ date: "Dec 8", requests: 3800, cost: 16.4 },
-	{ date: "Dec 9", requests: 4300, cost: 19.2 },
-	{ date: "Dec 10", requests: 5200, cost: 24.7 },
-]
-
-const modelUsageData = [
-	{ model: "GPT-4", usage: 4200, percentage: 35 },
-	{ model: "Claude 3", usage: 3100, percentage: 26 },
-	{ model: "Stable Diffusion", usage: 2400, percentage: 20 },
-	{ model: "LLaMA 3", usage: 1500, percentage: 12 },
-	{ model: "Others", usage: 800, percentage: 7 },
-]
-
-const latencyData = [
-	{ time: "00:00", latency: 320 },
-	{ time: "04:00", latency: 280 },
-	{ time: "08:00", latency: 450 },
-	{ time: "12:00", latency: 520 },
-	{ time: "16:00", latency: 480 },
-	{ time: "20:00", latency: 380 },
-	{ time: "23:59", latency: 340 },
-]
+import { useTRPC } from "@/integrations/trpc/react"
 
 const CustomTooltip = ({ active, payload, label }: any) => {
 	if (active && payload && payload.length) {
@@ -79,6 +53,46 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export function UsageCharts() {
+	const trpc = useTRPC()
+	const { data: requestCostTrendData, isLoading: isLoadingRequestCostTrend } =
+		useQuery(trpc.stats.getRequestCostTrend.queryOptions({ days: 7 }))
+
+	const { data: modelUsageData, isLoading: isLoadingModelUsage } = useQuery(
+		trpc.stats.getModelUsage.queryOptions(),
+	)
+
+	const { data: latencyTrendData, isLoading: isLoadingLatencyTrend } = useQuery(
+		trpc.stats.getLatencyTrend.queryOptions({ hours: 24 }),
+	)
+
+	if (
+		isLoadingRequestCostTrend ||
+		isLoadingModelUsage ||
+		isLoadingLatencyTrend
+	) {
+		return <div>Loading charts...</div>
+	}
+
+	// Transform data for charts
+	const transformedRequestCostTrend =
+		requestCostTrendData?.map((dataPoint) => ({
+			date: dataPoint.date,
+			requests: dataPoint.requests,
+			cost: dataPoint.cost,
+		})) || []
+
+	const transformedModelUsage =
+		modelUsageData?.map((dataPoint) => ({
+			model: dataPoint.model,
+			usage: dataPoint.usage,
+		})) || []
+
+	const transformedLatencyTrend =
+		latencyTrendData?.map((dataPoint) => ({
+			time: dataPoint.time,
+			latency: dataPoint.latency,
+		})) || []
+
 	return (
 		<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
 			{/* Request & Cost Trend */}
@@ -107,7 +121,7 @@ export function UsageCharts() {
 				</div>
 
 				<ResponsiveContainer width="100%" height={280}>
-					<AreaChart data={requestData}>
+					<AreaChart data={transformedRequestCostTrend}>
 						<defs>
 							<linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
 								<stop
@@ -182,13 +196,17 @@ export function UsageCharts() {
 						</div>
 					</div>
 					<div className="text-left sm:text-right">
-						<div className="text-xl md:text-2xl">12K</div>
+						<div className="text-xl md:text-2xl">
+							{transformedModelUsage
+								.reduce((sum, item) => sum + item.usage, 0)
+								.toLocaleString()}
+						</div>
 						<div className="text-xs text-muted-foreground">Total calls</div>
 					</div>
 				</div>
 
 				<ResponsiveContainer width="100%" height={280}>
-					<BarChart data={modelUsageData}>
+					<BarChart data={transformedModelUsage}>
 						<CartesianGrid
 							strokeDasharray="3 3"
 							stroke="rgba(255,255,255,0.05)"
@@ -242,21 +260,32 @@ export function UsageCharts() {
 					</div>
 					<div className="flex flex-wrap items-center gap-2 md:gap-4">
 						<div className="flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg bg-accent">
-							<div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-chart-2" />
 							<span className="text-xs">
-								Avg: <span className="font-medium">342ms</span>
+								Avg:{" "}
+								<span className="font-medium">
+									{transformedLatencyTrend.length > 0
+										? (
+												transformedLatencyTrend.reduce(
+													(sum, item) => sum + item.latency,
+													0,
+												) / transformedLatencyTrend.length
+											).toFixed(0)
+										: 0}
+									ms
+								</span>
 							</span>
 						</div>
+						{/* P95 latency is not directly available from the current getLatencyTrend query */}
 						<div className="flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg bg-accent">
 							<span className="text-xs text-muted-foreground">
-								P95: <span className="font-medium text-foreground">520ms</span>
+								P95: <span className="font-medium text-foreground">N/A</span>
 							</span>
 						</div>
 					</div>
 				</div>
 
 				<ResponsiveContainer width="100%" height={200}>
-					<LineChart data={latencyData}>
+					<LineChart data={transformedLatencyTrend}>
 						<CartesianGrid
 							strokeDasharray="3 3"
 							stroke="rgba(255,255,255,0.05)"
