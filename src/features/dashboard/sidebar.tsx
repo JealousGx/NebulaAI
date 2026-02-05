@@ -16,7 +16,7 @@ import { UserProfileDropdown } from "./user-profile-dropdown"
 
 const navItems = [
 	{ icon: LayoutDashboard, label: "Dashboard", id: "/dashboard" },
-	{ icon: Layers, label: "Endpoints", id: "/dashboard/endpoints" },
+	{ icon: Layers, label: "Models", id: "/dashboard/models" },
 	{ icon: Terminal, label: "Live Logs", id: "/dashboard/logs" },
 	{ icon: Settings, label: "Settings", id: "/dashboard/settings" },
 ]

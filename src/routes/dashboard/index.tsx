@@ -8,16 +8,17 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 
 import { ActivityFeed } from "@/features/dashboard/activity-feed"
-import { CreateEndpointModal } from "@/features/dashboard/endpoint/create-modal"
-import { EndpointsTable } from "@/features/dashboard/endpoints-table"
+import { CreateModelModal } from "@/features/dashboard/model/create-modal"
+import { ModelsTable } from "@/features/dashboard/models-table"
 import { StatsPanel } from "@/features/dashboard/stats-panel"
 import { SystemHealthWidget } from "@/features/dashboard/system-health-widget"
 import { UsageCharts } from "@/features/dashboard/usage-charts"
+
 import {
-	closeCreateEndpointModal,
-	openCreateEndpointModal,
-	useCreateEndpointModalState,
-} from "@/hooks/modals/use-create-endpoint-modal"
+	closeCreateModelModal,
+	openCreateModelModal,
+	useCreateModelModalState,
+} from "@/hooks/modals/use-create-model-modal"
 import { useTRPC } from "@/integrations/trpc/react"
 
 export const Route = createFileRoute("/dashboard/")({
@@ -35,18 +36,18 @@ export const Route = createFileRoute("/dashboard/")({
 			context.trpc.stats.getLatencyTrend.queryOptions({ hours: 24 }),
 		)
 		context.queryClient.ensureQueryData(
-			context.trpc.endpoints.list.queryOptions({ limit: 20, offset: 0 }),
+			context.trpc.models.list.queryOptions({ limit: 20, offset: 0 }),
 		)
 	},
 	component: RouteComponent,
 })
 
 function RouteComponent() {
-	const { isOpen } = useCreateEndpointModalState()
+	const { isOpen } = useCreateModelModalState()
 
 	const trpc = useTRPC()
-	const { data: endpoints } = useQuery(
-		trpc.endpoints.list.queryOptions({ limit: 20, offset: 0 }),
+	const { data: models } = useQuery(
+		trpc.models.list.queryOptions({ limit: 20, offset: 0 }),
 	)
 
 	return (
@@ -78,12 +79,12 @@ function RouteComponent() {
 						<span className="sm:hidden">Export</span>
 					</Button>
 					<Button
-						onClick={openCreateEndpointModal}
+						onClick={openCreateModelModal}
 						className="bg-primary text-primary-foreground hover:shadow-lg hover:shadow-primary/20 transition-all relative overflow-hidden group flex-1 sm:flex-none text-xs md:text-sm"
 					>
 						<div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
 						<Plus className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-						<span className="hidden sm:inline">Create New Endpoint</span>
+						<span className="hidden sm:inline">Create New Model</span>
 						<span className="sm:hidden">Create</span>
 					</Button>
 				</div>
@@ -95,7 +96,7 @@ function RouteComponent() {
 				<UsageCharts />
 
 				<div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-4 md:gap-6">
-					<EndpointsTable endpoints={endpoints} />
+					<ModelsTable models={models} />
 					<div className="space-y-4 md:space-y-6">
 						<ActivityFeed />
 						<SystemHealthWidget />
@@ -103,7 +104,7 @@ function RouteComponent() {
 				</div>
 			</main>
 
-			<CreateEndpointModal isOpen={isOpen} onClose={closeCreateEndpointModal} />
+			<CreateModelModal isOpen={isOpen} onClose={closeCreateModelModal} />
 		</React.Fragment>
 	)
 }

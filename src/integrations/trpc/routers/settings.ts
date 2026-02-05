@@ -22,10 +22,19 @@ export const settingsRouter = createTRPCRouter({
 			if (!ctx.session?.user?.id) {
 				throw new TRPCError({ code: "UNAUTHORIZED" })
 			}
-			await db
-				.update(workspace)
-				.set(input)
-				.where(eq(workspace.userId, ctx.session.user.id))
+			try {
+				return await db
+					.update(workspace)
+					.set(input)
+					.where(eq(workspace.userId, ctx.session.user.id))
+			} catch (err) {
+				console.error("Error updating workspace settings:", err)
+
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to update workspace settings.",
+				})
+			}
 		}),
 	updateNotificationSettings: protectedProcedure
 		.input(
@@ -40,19 +49,37 @@ export const settingsRouter = createTRPCRouter({
 			if (!ctx.session?.user?.id) {
 				throw new TRPCError({ code: "UNAUTHORIZED" })
 			}
-			await db
-				.update(notificationSettings)
-				.set(input)
-				.where(eq(notificationSettings.userId, ctx.session.user.id))
+			try {
+				return await db
+					.update(notificationSettings)
+					.set(input)
+					.where(eq(notificationSettings.userId, ctx.session.user.id))
+			} catch (err) {
+				console.error("Error updating notification settings:", err)
+
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to update notification settings.",
+				})
+			}
 		}),
 	listApiKeys: protectedProcedure.query(async ({ ctx }) => {
 		if (!ctx.session?.user?.id) {
 			throw new TRPCError({ code: "UNAUTHORIZED" })
 		}
-		return await db
-			.select()
-			.from(apiKey)
-			.where(eq(apiKey.userId, ctx.session.user.id))
+		try {
+			return await db
+				.select()
+				.from(apiKey)
+				.where(eq(apiKey.userId, ctx.session.user.id))
+		} catch (err) {
+			console.error("Error fetching API keys:", err)
+
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Failed to fetch API keys.",
+			})
+		}
 	}),
 	createApiKey: protectedProcedure
 		.input(z.object({ name: z.string() }))
@@ -60,13 +87,22 @@ export const settingsRouter = createTRPCRouter({
 			if (!ctx.session?.user?.id) {
 				throw new TRPCError({ code: "UNAUTHORIZED" })
 			}
-			const newKey = `nbla_${nanoid(24)}`
-			const [result] = await db.insert(apiKey).values({
-				name: input.name,
-				key: newKey,
-				userId: ctx.session.user.id,
-			})
-			return result
+			try {
+				const newKey = `nbla_${nanoid(24)}`
+				const [result] = await db.insert(apiKey).values({
+					name: input.name,
+					key: newKey,
+					userId: ctx.session.user.id,
+				})
+				return result
+			} catch (err) {
+				console.error("Error creating API key:", err)
+
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to create API key.",
+				})
+			}
 		}),
 	revokeApiKey: protectedProcedure
 		.input(z.object({ id: z.string() }))
@@ -74,6 +110,15 @@ export const settingsRouter = createTRPCRouter({
 			if (!ctx.session?.user?.id) {
 				throw new TRPCError({ code: "UNAUTHORIZED" })
 			}
-			await db.delete(apiKey).where(eq(apiKey.id, input.id))
+			try {
+				return await db.delete(apiKey).where(eq(apiKey.id, input.id))
+			} catch (err) {
+				console.error("Error revoking API key:", err)
+
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to revoke API key.",
+				})
+			}
 		}),
 })

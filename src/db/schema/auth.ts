@@ -10,7 +10,7 @@ import {
 
 import { activityLog } from "./activity-log"
 import { apiKey } from "./api-key"
-import { endpoint } from "./endpoints"
+import { model } from "./model"
 import { notificationSettings } from "./notification-settings"
 import { workspace } from "./workspace"
 
@@ -92,7 +92,7 @@ export const verification = mysqlTable(
 export const userRelations = relations(user, ({ one, many }) => ({
 	sessions: many(session),
 	accounts: many(account),
-	endpoints: many(endpoint),
+	models: many(model),
 	activityLogs: many(activityLog),
 	workspace: one(workspace, {
 		fields: [user.id],

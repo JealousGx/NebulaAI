@@ -79,8 +79,8 @@ export function ActivityFeed() {
 								</span>
 							</div>
 							<div className="text-xs md:text-sm truncate group-hover:text-primary transition-colors mb-1 md:mb-2">
-								{/* Placeholder for endpoint name - activityLog only stores endpointId */}
-								Endpoint ID: {activity.endpointId}
+								{/* Placeholder for model name - activityLog only stores modelId */}
+								Model: {activity.modelId}
 							</div>
 							<div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs">
 								<span

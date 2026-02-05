@@ -265,10 +265,10 @@ function RouteComponent() {
 
 									<div>
 										<div className="text-sm text-muted-foreground mb-2">
-											Endpoint
+											Model
 										</div>
 										<div className="text-sm bg-background/40 p-3 rounded border border-border">
-											{selectedLog.endpointId}
+											{selectedLog.modelId}
 										</div>
 									</div>
 

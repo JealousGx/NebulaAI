@@ -1,18 +1,25 @@
-import { getModelPricing } from "./providers"
+interface ModelMeta {
+	prompt_tokens: number
+	completion_tokens: number
+	total_tokens: number
+	price: string
+}
 
-export function calculateCost(
-	provider: string,
-	model: string,
-	promptTokens: number,
-	completionTokens: number,
-): number {
-	const pricing = getModelPricing(provider, model)
-	if (!pricing) {
-		return 0
-	}
+export function calculateCost(modelMeta: ModelMeta): number {
+	if (!modelMeta) return 0
 
-	const promptCost = (promptTokens / 1000) * pricing.prompt
-	const completionCost = (completionTokens / 1000) * pricing.completion
+	const {
+		prompt_tokens = 0,
+		completion_tokens = 0,
+		total_tokens = 0,
+		price,
+	} = modelMeta
 
-	return promptCost + completionCost
+	const modelPrice = Number(price)
+	if (!Number.isFinite(modelPrice) || modelPrice <= 0) return 0
+
+	const tokens =
+		total_tokens > 0 ? total_tokens : prompt_tokens + completion_tokens
+
+	return (tokens / 1000) * modelPrice
 }

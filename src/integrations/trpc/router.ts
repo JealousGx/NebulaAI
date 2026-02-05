@@ -1,14 +1,14 @@
 import { createTRPCRouter } from "./init"
 
 import { activityLogRouter } from "./routers/activity-log"
-import { endpointsRouter } from "./routers/endpoints"
+import { modelsRouter } from "./routers/models"
 import { profileRouter } from "./routers/profile"
+import { proxyRouter } from "./routers/proxy"
 import { settingsRouter } from "./routers/settings"
 import { statsRouter } from "./routers/stats"
-import { proxyRouter } from "./routers/proxy"
 
 export const trpcRouter = createTRPCRouter({
-	endpoints: endpointsRouter,
+	models: modelsRouter,
 	activityLog: activityLogRouter,
 	stats: statsRouter,
 	profile: profileRouter,

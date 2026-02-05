@@ -1,0 +1,304 @@
+import imageCompression from "browser-image-compression"
+import { AlertCircle, Image as ImageIcon, X } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
+
+import { Button } from "@/components/ui/button"
+import { OptimizedImage } from "@/components/ui/image"
+
+import { cn } from "@/lib/utils"
+
+interface ImageUploadProps {
+	value?: string
+	onChange: (file: File) => void
+	onRemove: () => void
+	disabled?: boolean
+	className?: string
+	error?: string
+	isUploading?: boolean
+}
+
+export function ImageUpload({
+	value,
+	onChange,
+	onRemove,
+	disabled = false,
+	className,
+	error,
+	isUploading = false,
+}: ImageUploadProps) {
+	const [isDragActive, setIsDragActive] = useState(false)
+	const [isDragReject, setIsDragReject] = useState(false)
+	const [previewUrl, setPreviewUrl] = useState<string | null>(value || null)
+	const [isCompressing, setIsCompressing] = useState(false)
+
+	const handleFileSelect = useCallback(
+		async (file: File) => {
+			if (!file) return
+
+			setIsCompressing(true)
+
+			try {
+				const options = {
+					maxSizeMB: 1,
+					maxWidthOrHeight: 1920,
+					useWebWorker: true,
+					fileType: "image/webp",
+					quality: 0.8,
+				}
+
+				let processedFile = file
+
+				if (file.type.startsWith("image/") && file.type !== "image/svg+xml") {
+					try {
+						processedFile = await imageCompression(file, options)
+
+						console.log("Original file size:", file.size / 1024 / 1024, "MB")
+
+						console.log(
+							"Compressed file size:",
+							processedFile.size / 1024 / 1024,
+							"MB",
+						)
+					} catch (compressError) {
+						console.warn(
+							"Client-side image compression failed, using original file:",
+							compressError,
+						)
+
+						processedFile = file // Fallback to original if compression fails
+					}
+				}
+
+				const url = URL.createObjectURL(processedFile)
+				setPreviewUrl((prev) => {
+					if (prev) {
+						URL.revokeObjectURL(prev)
+					}
+
+					return url
+				})
+
+				onChange(processedFile)
+			} catch (error) {
+				console.error("Error compressing image:", error)
+			} finally {
+				setIsCompressing(false)
+			}
+		},
+		[onChange],
+	)
+
+	const handleInputChange = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			const file = event.target.files?.[0]
+			if (file) {
+				handleFileSelect(file)
+			}
+		},
+		[handleFileSelect],
+	)
+
+	const handleRemove = useCallback(() => {
+		if (previewUrl) {
+			URL.revokeObjectURL(previewUrl)
+			setPreviewUrl(null)
+		}
+
+		onRemove()
+	}, [previewUrl, onRemove])
+
+	const handleDragEnter = useCallback((e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragActive(true)
+		setIsDragReject(false)
+	}, [])
+
+	const handleDragLeave = useCallback((e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		// Only set drag active to false if we're leaving the drop zone entirely
+		if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+			setIsDragActive(false)
+			setIsDragReject(false)
+		}
+	}, [])
+
+	const handleDragOver = useCallback((e: React.DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+
+		// Check if the dragged items are valid files
+		if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+			const item = e.dataTransfer.items[0]
+			if (item.kind === "file") {
+				const file = item.getAsFile()
+				if (file) {
+					const allowedTypes = [
+						"image/svg+xml",
+						"image/png",
+						"image/jpeg",
+						"image/webp",
+					]
+					if (!allowedTypes.includes(file.type)) {
+						setIsDragReject(true)
+					} else {
+						setIsDragReject(false)
+					}
+				}
+			}
+		}
+	}, [])
+
+	const handleDrop = useCallback(
+		(e: React.DragEvent) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			setIsDragActive(false)
+			setIsDragReject(false)
+
+			const files = Array.from(e.dataTransfer.files)
+			if (files.length === 0) return
+
+			const file = files[0]
+			handleFileSelect(file)
+		},
+		[handleFileSelect],
+	)
+
+	useEffect(() => {
+		return () => {
+			if (previewUrl) {
+				URL.revokeObjectURL(previewUrl)
+			}
+		}
+	}, [previewUrl])
+
+	useEffect(() => {
+		if (value && value !== previewUrl) {
+			setPreviewUrl(value)
+		} else if (!value && previewUrl && !isUploading && !isCompressing) {
+			URL.revokeObjectURL(previewUrl)
+
+			setPreviewUrl(null)
+		}
+	}, [value])
+
+	const isLoading = isUploading || isCompressing
+
+	return (
+		<div className={cn("space-y-4 w-max", className)}>
+			{previewUrl ? (
+				<div className="relative group">
+					<div className="relative w-24 h-24 mx-auto rounded-xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200">
+						<OptimizedImage
+							src={previewUrl}
+							alt="Product icon"
+							width={96}
+							height={96}
+							objectFit="contain"
+							className="p-2"
+						/>
+					</div>
+
+					<Button
+						type="button"
+						variant="destructive"
+						size="icon"
+						className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+						onClick={handleRemove}
+						disabled={disabled || isLoading}
+					>
+						<X className="h-3 w-3" />
+					</Button>
+				</div>
+			) : (
+				<div
+					onDragEnter={handleDragEnter}
+					onDragLeave={handleDragLeave}
+					onDragOver={handleDragOver}
+					onDrop={handleDrop}
+					className={cn(
+						"relative border-2 border-dashed rounded-xl p-6 transition-all duration-200 cursor-pointer",
+						"hover:border-primary/50 hover:bg-primary/5",
+						isDragActive && !isDragReject && "border-primary bg-primary/10",
+						isDragReject && "border-destructive bg-destructive/10",
+						disabled && "opacity-50 cursor-not-allowed",
+						isLoading && "pointer-events-none",
+					)}
+				>
+					<label htmlFor="icon-upload" className="block cursor-pointer">
+						<input
+							id="icon-upload"
+							type="file"
+							accept=".svg,.png,.jpg,.jpeg,.webp"
+							className="hidden"
+							onChange={handleInputChange}
+							disabled={disabled || isLoading}
+						/>
+
+						<div className="flex flex-col items-center justify-center space-y-3">
+							{isLoading ? (
+								<>
+									<div className="relative">
+										<div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+											<div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+										</div>
+									</div>
+									<div className="text-center space-y-2">
+										<p className="text-sm font-medium text-gray-900">
+											{isCompressing
+												? "Compressing image..."
+												: "Uploading image..."}
+										</p>
+									</div>
+								</>
+							) : (
+								<>
+									<div
+										className={cn(
+											"w-12 h-12 rounded-full flex items-center justify-center transition-colors",
+											isDragActive && !isDragReject
+												? "bg-primary/10"
+												: "bg-gray-50",
+											isDragReject && "bg-destructive/10",
+										)}
+									>
+										{isDragReject ? (
+											<AlertCircle className="h-6 w-6 text-destructive" />
+										) : (
+											<ImageIcon className="h-6 w-6 text-gray-400" />
+										)}
+									</div>
+
+									<div className="text-center space-y-1">
+										<p className="text-sm font-medium text-gray-900">
+											{isDragActive && !isDragReject
+												? "Drop your icon here"
+												: isDragReject
+													? "Invalid file type"
+													: "Upload product icon"}
+										</p>
+										<p className="text-xs text-gray-500">
+											{isDragReject
+												? "Please use SVG, PNG, JPEG, or WebP files"
+												: "SVG, PNG, JPEG, WebP up to 2MB"}
+										</p>
+									</div>
+								</>
+							)}
+						</div>
+					</label>
+				</div>
+			)}
+
+			{error && (
+				<div className="flex items-center space-x-2 text-sm text-destructive">
+					<AlertCircle className="h-4 w-4" />
+					<span>{error}</span>
+				</div>
+			)}
+		</div>
+	)
+}

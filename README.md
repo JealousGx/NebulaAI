@@ -49,3 +49,49 @@ Set up your `.env` file (see `.env.example`).
 Run the database migrations: `pnpm run db:push`
 
 Start the development server: `pnpm run dev`
+
+--
+
+### Recommendations for Improvement
+
+1.  Implement Rate Limiting (Priority for Security):
+
+    - Where: This should ideally be handled by a middleware before your tRPC router, or even at an API gateway level if you have one.
+    - What: Configure limits for requests containing the x-api-key header, especially for requests that result in invalid API keys, to prevent rapid guessing attempts.
+
+2.  Introduce an API Key Caching Layer (Priority for Performance):
+
+    - What: After a successful database lookup of an API key, cache the userId (and any other relevant user data like roles or permissions) associated with that key in a fast, in-memory store like Redis
+      or a simple in-process cache.
+    - How `context.ts` would change (conceptual):
+
+    1 // ...
+    2 import { getCachedApiKeyData, setCachedApiKeyData } from "@/lib/cache" // New caching utility
+    3
+    4 export async function createContext({ req }: FetchCreateContextFnOptions) {
+    5 // ... existing session logic ...
+    6
+    7 if (!userId) {
+    8 const headerApiKey = req.headers.get("x-api-key")
+    9 if (headerApiKey) {
+
+10 let cachedData = await getCachedApiKeyData(headerApiKey); // Check cache first
+11
+12 if (cachedData) {
+13 userId = cachedData.userId;
+14 } else {
+15 const foundKey = await db
+16 .select()
+17 .from(apiKey)
+18 .where(eq(apiKey.key, headerApiKey))
+19 .limit(1)
+20
+21 if (foundKey.length > 0) {
+22 userId = foundKey[0].userId
+23 await setCachedApiKeyData(headerApiKey, { userId }, { ttl: 300 }); // Cache for 5 minutes
+24 }
+25 }
+26 }
+27 }
+28 // ...
+29 } \* Benefits: This would drastically reduce the number of direct database reads for API key validation, significantly improving performance under load.

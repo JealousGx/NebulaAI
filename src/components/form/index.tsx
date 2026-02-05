@@ -135,6 +135,8 @@ export function Select({
 	groupProps,
 	labelProps,
 	itemProps,
+	description,
+	required,
 }: {
 	label: string
 	values: Array<{ label: string; value: string }>
@@ -146,13 +148,18 @@ export function Select({
 	groupProps?: ShadcnSelect.SelectGroupProps
 	labelProps?: ShadcnSelect.SelectLabelProps
 	itemProps?: ShadcnSelect.SelectItemProps
+	description?: string
+	required?: boolean
 }) {
 	const field = useFieldContext<string>()
 	const errors = useStore(field.store, (state) => state.meta.errors)
 
 	return (
-		<div>
+		<div className="space-y-2">
+			<Label htmlFor={label}>{label}</Label>
+
 			<ShadcnSelect.Select
+				required={required}
 				name={field.name}
 				value={field.state.value}
 				onValueChange={(value) => field.handleChange(value)}
@@ -182,7 +189,13 @@ export function Select({
 				</ShadcnSelect.SelectContent>
 			</ShadcnSelect.Select>
 
-			{field.state.meta.isTouched && <ErrorMessages errors={errors} />}
+			{/* {field.state.meta.isTouched && <ErrorMessages errors={errors} />} */}
+
+			{field.state.meta.isTouched ? (
+				<ErrorMessages errors={errors} />
+			) : description ? (
+				<p className="text-xs text-muted-foreground">{description}</p>
+			) : null}
 		</div>
 	)
 }

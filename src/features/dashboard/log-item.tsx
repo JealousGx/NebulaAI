@@ -63,9 +63,7 @@ export const LogItem = memo(
 								{log.latency}ms
 							</span>
 						</div>
-						<div className="text-sm truncate">
-							Endpoint ID: {log.endpointId}
-						</div>
+						<div className="text-sm truncate">Model ID: {log.modelId}</div>
 						<div className="text-xs text-muted-foreground mt-1">
 							IP: {log.ip || "N/A"}
 						</div>
@@ -122,7 +120,7 @@ export const LogItem = memo(
 // 					</span>
 // 				</div>
 // 				<div className="text-sm truncate">
-// 					Endpoint ID: {log.endpointId}
+// 					Model ID: {log.modelId}
 // 				</div>
 // 				<div className="text-xs text-muted-foreground mt-1">
 // 					IP: {log.ip || "N/A"}

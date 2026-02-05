@@ -1,5 +1,5 @@
-import { Layers, Lock, Shield, Terminal } from "lucide-react";
-import { motion } from "motion/react";
+import { Layers, Lock, Shield, Terminal } from "lucide-react"
+import { motion } from "motion/react"
 
 const features = [
 	{
@@ -30,7 +30,7 @@ const features = [
 			"Define custom request transformations to maintain a consistent API interface across all providers.",
 		gradient: "from-secondary/20 to-secondary/5",
 	},
-];
+]
 
 export function FeaturesSection() {
 	return (
@@ -77,5 +77,5 @@ export function FeaturesSection() {
 				</div>
 			</div>
 		</section>
-	);
+	)
 }

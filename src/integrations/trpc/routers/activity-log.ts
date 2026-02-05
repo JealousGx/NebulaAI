@@ -50,27 +50,33 @@ export const activityLogRouter = createTRPCRouter({
 				whereConditions.push(
 					like(activityLog.request, `%${searchQuery}%`),
 					like(activityLog.response, `%${searchQuery}%`),
-					like(activityLog.endpointId, `%${searchQuery}%`),
+					like(activityLog.modelId, `%${searchQuery}%`),
 					like(activityLog.method, `%${searchQuery}%`),
 					like(activityLog.ip, `%${searchQuery}%`),
 				)
 			}
 
-			const logs = await db
-				.select()
-				.from(activityLog)
-				.where(and(...whereConditions))
-				.orderBy(activityLog.createdAt)
-				.limit(limit)
-				.offset(offset)
-
-			return logs
+			try {
+				return await db
+					.select()
+					.from(activityLog)
+					.where(and(...whereConditions))
+					.orderBy(activityLog.createdAt)
+					.limit(limit)
+					.offset(offset)
+			} catch (err) {
+				console.error("Error fetching activity logs:", err)
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to fetch activity logs.",
+				})
+			}
 		}),
 	add: protectedProcedure
 		.input(
 			z.object({
 				method: z.string().min(1),
-				endpointId: z.string().optional(),
+				modelId: z.string().optional(),
 				status: z.number(),
 				latency: z.number(),
 				cost: z.number(),
@@ -90,7 +96,16 @@ export const activityLogRouter = createTRPCRouter({
 				cost: String(input.cost),
 				userId: ctx.session.user.id,
 			}
-			const [result] = await db.insert(activityLog).values(newLog)
-			return result
+
+			try {
+				const [result] = await db.insert(activityLog).values(newLog)
+				return result
+			} catch (err) {
+				console.error("Error adding activity log:", err)
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Failed to add activity log.",
+				})
+			}
 		}),
 })

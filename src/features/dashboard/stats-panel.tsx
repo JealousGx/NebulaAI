@@ -28,8 +28,8 @@ export function StatsPanel() {
 			isPositive: parseFloat(stats.totalCost.change) >= 0,
 		},
 		{
-			label: "Active Endpoints",
-			value: stats.activeEndpoints.toLocaleString(),
+			label: "Active Models",
+			value: stats.activeModels.toLocaleString(),
 			change: "",
 			isPositive: true,
 		},

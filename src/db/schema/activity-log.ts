@@ -12,7 +12,7 @@ import {
 import { prefixedId } from "@/lib/id"
 
 import { user } from "./auth"
-import { endpoint } from "./endpoints"
+import { model } from "./model"
 
 export const activityLog = mysqlTable(
 	"activity_log",
@@ -22,9 +22,7 @@ export const activityLog = mysqlTable(
 			.$defaultFn(() => prefixedId("act")),
 		timestamp: timestamp("timestamp", { fsp: 3 }).defaultNow().notNull(),
 		method: varchar("method", { length: 10 }).notNull(),
-		endpointId: varchar("endpoint_id", { length: 36 }).references(
-			() => endpoint.id,
-		),
+		modelId: varchar("model_id", { length: 36 }).references(() => model.id),
 		status: int("status").notNull(),
 		latency: int("latency").notNull(),
 		cost: decimal("cost", { precision: 10, scale: 4 }).notNull(),
@@ -50,9 +48,9 @@ export const activityLogRelations = relations(activityLog, ({ one }) => ({
 		fields: [activityLog.userId],
 		references: [user.id],
 	}),
-	endpoint: one(endpoint, {
-		fields: [activityLog.endpointId],
-		references: [endpoint.id],
+	model: one(model, {
+		fields: [activityLog.modelId],
+		references: [model.id],
 	}),
 }))
 

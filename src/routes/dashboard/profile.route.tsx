@@ -1,6 +1,9 @@
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { Calendar, Edit2, Mail, MapPin, User } from "lucide-react"
 import { motion } from "motion/react"
+import { Activity } from "react"
+import { toast } from "sonner"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -8,11 +11,110 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
+import { useAppForm } from "@/hooks/use-form"
+
+import { useTRPC } from "@/integrations/trpc/react"
+
+import { isEmpty } from "@/lib/utils"
+
+import type { User as IUser } from "@/types"
+
+type UpdateUser = Omit<
+	IUser,
+	"id" | "emailVerified" | "createdAt" | "updatedAt"
+>
+
 export const Route = createFileRoute("/dashboard/profile")({
+	beforeLoad: ({ context }) => {
+		context.queryClient.ensureQueryData(context.trpc.profile.get.queryOptions())
+	},
 	component: RouteComponent,
 })
 
 function RouteComponent() {
+	const trpc = useTRPC()
+	const { data: profile, isLoading } = useQuery(trpc.profile.get.queryOptions())
+
+	const mutation = useMutation(trpc.profile.update.mutationOptions())
+
+	const form = useAppForm({
+		defaultValues: {
+			name: profile?.name || "",
+			email: profile?.email || "",
+			bio: profile?.bio || "",
+			location: profile?.location || "",
+			website: profile?.website || "",
+			image: profile?.image || "",
+		} satisfies UpdateUser,
+		// validators: {
+		// 	onBlur: ({ value }) => {
+		// 		const required: Record<string, unknown> = {
+		// 			name: "Full Name",
+		// 			email: "Email Address",
+		// 		}
+
+		// 		const flatten = (
+		// 			obj: Record<string, unknown>,
+		// 			prefix = "",
+		// 		): [string, string][] =>
+		// 			Object.entries(obj).flatMap(([k, v]) => {
+		// 				const path = prefix ? `${prefix}.${k}` : k
+		// 				return typeof v === "string"
+		// 					? [[path, v]]
+		// 					: flatten(v as Record<string, unknown>, path)
+		// 			})
+
+		// 		const getAtPath = (obj: Record<string, unknown>, path: string) =>
+		// 			path
+		// 				.split(".")
+		// 				.reduce(
+		// 					(acc: unknown, part) =>
+		// 						acc && typeof acc === "object"
+		// 							? (acc as Record<string, unknown>)[part]
+		// 							: undefined,
+		// 					obj,
+		// 				)
+
+		// 		const fields = flatten(required).reduce(
+		// 			(acc, [path, label]) => {
+		// 				const v = getAtPath(value as Record<string, unknown>, path)
+		// 				if (isEmpty(v)) {
+		// 					acc[path] = `${label} is required`
+		// 				}
+		// 				return acc
+		// 			},
+		// 			{} as Record<string, string>,
+		// 		)
+
+		// 		return { fields }
+		// 	},
+		// },
+		onSubmit: async ({ value }) => {
+			toast.promise(mutation.mutateAsync(value), {
+				loading: "Updating profile...",
+				success: "Profile updated successfully!",
+				error: (err) => `Error: ${err.message}`,
+			})
+		},
+	})
+
+	if (!isLoading && !profile) {
+		return <div className="p-8">Profile not found.</div>
+	}
+
+	if (!profile || isLoading) {
+		return <div className="p-8">Loading profile...</div>
+	}
+
+	const handleSubmit = (data: {
+		name: string
+		email: string
+		bio: string
+		location: string
+		website: string
+		image: string
+	}) => {}
+
 	return (
 		<div>
 			<motion.header
@@ -42,9 +144,15 @@ function RouteComponent() {
 						<div className="flex items-start gap-8">
 							<div className="relative">
 								<Avatar className="h-32 w-32">
-									<AvatarImage src="https://github.com/shadcn.png" />
+									<AvatarImage src={profile.image ?? undefined} />
 									<AvatarFallback className="bg-primary text-primary-foreground text-3xl">
-										JD
+										{(profile.name
+											? profile.name
+													.split(" ")
+													.map((n) => n[0])
+													.join("")
+											: "U"
+										).toUpperCase()}
 									</AvatarFallback>
 								</Avatar>
 								<Button
@@ -56,23 +164,30 @@ function RouteComponent() {
 							</div>
 
 							<div className="flex-1">
-								<h2 className="text-2xl mb-2">John Doe</h2>
+								<h2 className="text-2xl mb-2">{profile.name}</h2>
 								<p className="text-muted-foreground mb-4">
-									Full-stack developer & AI enthusiast
+									{profile.bio || "No bio available."}
 								</p>
 
 								<div className="grid grid-cols-2 gap-4">
 									<div className="flex items-center gap-2 text-sm text-muted-foreground">
 										<Mail className="h-4 w-4" />
-										john@example.com
+										{profile.email}
 									</div>
-									<div className="flex items-center gap-2 text-sm text-muted-foreground">
-										<MapPin className="h-4 w-4" />
-										San Francisco, CA
-									</div>
+									<Activity mode={profile.location ? "visible" : "hidden"}>
+										<div className="flex items-center gap-2 text-sm text-muted-foreground">
+											<MapPin className="h-4 w-4" />
+											{profile.location}
+										</div>
+									</Activity>
 									<div className="flex items-center gap-2 text-sm text-muted-foreground">
 										<Calendar className="h-4 w-4" />
-										Joined Oct 2024
+										Joined{" "}
+										{new Date(profile.createdAt).toLocaleDateString("en-US", {
+											year: "numeric",
+											month: "long",
+											day: "numeric",
+										})}
 									</div>
 								</div>
 							</div>
@@ -88,23 +203,13 @@ function RouteComponent() {
 						<h3 className="text-xl mb-6">Personal Information</h3>
 
 						<div className="space-y-6">
-							<div className="grid grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="first-name">First Name</Label>
-									<Input
-										id="first-name"
-										defaultValue="John"
-										className="bg-background/40 border-border"
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="last-name">Last Name</Label>
-									<Input
-										id="last-name"
-										defaultValue="Doe"
-										className="bg-background/40 border-border"
-									/>
-								</div>
+							<div className="space-y-2">
+								<Label htmlFor="name">Full Name</Label>
+								<Input
+									id="name"
+									defaultValue={profile.name}
+									className="bg-background/40 border-border"
+								/>
 							</div>
 
 							<div className="space-y-2">
@@ -112,7 +217,7 @@ function RouteComponent() {
 								<Input
 									id="email"
 									type="email"
-									defaultValue="john@example.com"
+									defaultValue={profile.email}
 									className="bg-background/40 border-border"
 								/>
 							</div>
@@ -122,7 +227,7 @@ function RouteComponent() {
 								<textarea
 									id="bio"
 									rows={4}
-									defaultValue="Full-stack developer with a passion for AI and machine learning. Building the future, one API call at a time."
+									defaultValue={profile.bio || ""}
 									className="w-full px-3 py-2 bg-background/40 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
 								/>
 							</div>
@@ -131,7 +236,7 @@ function RouteComponent() {
 								<Label htmlFor="location">Location</Label>
 								<Input
 									id="location"
-									defaultValue="San Francisco, CA"
+									defaultValue={profile.location || ""}
 									className="bg-background/40 border-border"
 								/>
 							</div>
@@ -140,7 +245,7 @@ function RouteComponent() {
 								<Label htmlFor="website">Website</Label>
 								<Input
 									id="website"
-									placeholder="https://yourwebsite.com"
+									placeholder={profile.website || ""}
 									className="bg-background/40 border-border"
 								/>
 							</div>
@@ -177,7 +282,7 @@ function RouteComponent() {
 							<div className="p-4 rounded-lg bg-background/40 border border-border text-center">
 								<div className="text-3xl mb-2 text-chart-2">8</div>
 								<div className="text-sm text-muted-foreground">
-									Active Endpoints
+									Active Models
 								</div>
 							</div>
 
