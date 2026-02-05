@@ -1,6 +1,7 @@
 import { type InferSelectModel, relations } from "drizzle-orm"
 import {
 	index,
+	json,
 	mysqlEnum,
 	mysqlTable,
 	text,
@@ -13,8 +14,8 @@ import { prefixedId } from "@/lib/id"
 import { user } from "./auth"
 import { modelApiKey } from "./model-api-key"
 
-export const endpoint = mysqlTable(
-	"endpoint",
+export const model = mysqlTable(
+	"model",
 	{
 		id: varchar("id", { length: 36 })
 			.primaryKey()
@@ -26,6 +27,7 @@ export const endpoint = mysqlTable(
 			.default("active")
 			.notNull(),
 		description: text("description"),
+		meta: json("meta").$type<Record<string, unknown> | null>().default(null),
 		transformation: text("transformation"),
 		userId: varchar("user_id", { length: 36 })
 			.notNull()
@@ -36,18 +38,18 @@ export const endpoint = mysqlTable(
 			.$onUpdate(() => new Date())
 			.notNull(),
 	},
-	(table) => [index("endpoint_userId_idx").on(table.userId)],
+	(table) => [index("model_userId_idx").on(table.userId)],
 )
 
-export const endpointRelations = relations(endpoint, ({ one }) => ({
+export const modelRelations = relations(model, ({ one }) => ({
 	user: one(user, {
-		fields: [endpoint.userId],
+		fields: [model.userId],
 		references: [user.id],
 	}),
 	modelApiKey: one(modelApiKey, {
-		fields: [endpoint.id],
-		references: [modelApiKey.endpointId],
+		fields: [model.id],
+		references: [modelApiKey.modelId],
 	}),
 }))
 
-export type Endpoint = InferSelectModel<typeof endpoint>
+export type Model = InferSelectModel<typeof model>

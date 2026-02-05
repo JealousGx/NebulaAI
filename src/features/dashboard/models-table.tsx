@@ -6,55 +6,53 @@ import { Line, LineChart, ResponsiveContainer } from "recharts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-import type { Endpoint } from "@/types"
+import type { Model } from "@/types"
 
 const mockSparklineData = (base: number) =>
 	Array.from({ length: 24 }, (_) => ({
 		value: base + Math.random() * 100 - 50,
 	}))
 
-interface IEndpointsTable {
-	endpoints?: Endpoint[]
+interface IModelsTable {
+	models?: Model[]
 }
 
-export function EndpointsTable({ endpoints }: IEndpointsTable) {
-	const [selectedEndpoint, setSelectedEndpoint] = useState<string | null>(null)
+export function ModelsTable({ models }: IModelsTable) {
+	const [selectedModel, setSelectedModel] = useState<string | null>(null)
 	const [isEditing, setIsEditing] = useState(false)
 	const [newName, setNewName] = useState("")
 
-	if (!endpoints || endpoints.length === 0) {
+	if (!models || models.length === 0) {
 		return (
 			<div className="p-6 text-center text-muted-foreground">
-				No endpoints found. Create a new endpoint to get started.
+				No models found. Create a new model to get started.
 			</div>
 		)
 	}
 
 	const handleEdit = (id: string) => {
-		setSelectedEndpoint(id)
+		setSelectedModel(id)
 		setIsEditing(true)
-		const endpoint = endpoints.find((e) => e.id === id)
-		if (endpoint) {
-			setNewName(endpoint.name)
+		const model = models.find((m) => m.id === id)
+		if (model) {
+			setNewName(model.name)
 		}
 	}
 
 	const handleSave = () => {
-		if (selectedEndpoint && newName) {
-			const endpointIndex = endpoints.findIndex(
-				(e) => e.id === selectedEndpoint,
-			)
-			if (endpointIndex !== -1) {
-				endpoints[endpointIndex].name = newName
+		if (selectedModel && newName) {
+			const modelIndex = models.findIndex((m) => m.id === selectedModel)
+			if (modelIndex !== -1) {
+				models[modelIndex].name = newName
 			}
 		}
 		setIsEditing(false)
-		setSelectedEndpoint(null)
+		setSelectedModel(null)
 	}
 
 	const handleCancel = () => {
 		setIsEditing(false)
-		setSelectedEndpoint(null)
+		setSelectedModel(null)
 	}
 
 	return (
@@ -65,7 +63,7 @@ export function EndpointsTable({ endpoints }: IEndpointsTable) {
 			className="glass rounded-xl overflow-hidden"
 		>
 			<div className="border-b border-border px-6 py-4">
-				<h3 className="text-xl">Active Endpoints</h3>
+				<h3 className="text-xl">Active Models</h3>
 			</div>
 
 			<div className="overflow-x-auto">
@@ -93,9 +91,9 @@ export function EndpointsTable({ endpoints }: IEndpointsTable) {
 						</tr>
 					</thead>
 					<tbody>
-						{endpoints.map((endpoint, index) => (
+						{models.map((model, index) => (
 							<motion.tr
-								key={endpoint.id}
+								key={model.id}
 								initial={{ opacity: 0, x: -20 }}
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ delay: 0.5 + index * 0.05 }}
@@ -104,14 +102,14 @@ export function EndpointsTable({ endpoints }: IEndpointsTable) {
 								<td className="px-6 py-4">
 									<div
 										className={`w-3 h-3 rounded-full ${
-											endpoint.status === "active"
+											model.status === "active"
 												? "bg-chart-2 shadow-[0_0_8px_rgba(114,192,255,0.6)]"
 												: "bg-destructive shadow-[0_0_8px_rgba(255,100,100,0.6)]"
 										}`}
 									/>
 								</td>
 								<td className="px-6 py-4">
-									{isEditing && selectedEndpoint === endpoint.id ? (
+									{isEditing && selectedModel === model.id ? (
 										<div className="flex items-center">
 											<Input
 												value={newName}
@@ -137,18 +135,18 @@ export function EndpointsTable({ endpoints }: IEndpointsTable) {
 										</div>
 									) : (
 										<div>
-											<div>{endpoint.name}</div>
+											<div>{model.name}</div>
 											<div className="text-xs text-muted-foreground mt-1">
-												/api/proxy/{endpoint.name}
+												/api/proxy/{model.model}
 											</div>
 										</div>
 									)}
 								</td>
 								<td className="px-6 py-4 text-muted-foreground">
-									{endpoint.provider}
+									{model.provider}
 								</td>
 								<td className="px-6 py-4">
-									{/* {endpoint.requests.toLocaleString()} */}
+									{/* {model.requests.toLocaleString()} */}
 									{
 										// random number between 800 and 4500
 										(
@@ -158,7 +156,7 @@ export function EndpointsTable({ endpoints }: IEndpointsTable) {
 								</td>
 								<td className="px-6 py-4">
 									<ResponsiveContainer width={80} height={30}>
-										{/* <LineChart data={endpoint.sparkline}> */}
+										{/* <LineChart data={model.sparkline}> */}
 										<LineChart
 											data={mockSparklineData(
 												Math.floor(Math.random() * (150 - 80 + 1)) + 80,
@@ -194,7 +192,7 @@ export function EndpointsTable({ endpoints }: IEndpointsTable) {
 											variant="ghost"
 											size="sm"
 											className="hover:bg-accent"
-											onClick={() => handleEdit(endpoint.id)}
+											onClick={() => handleEdit(model.id)}
 										>
 											<Edit className="h-4 w-4" />
 										</Button>

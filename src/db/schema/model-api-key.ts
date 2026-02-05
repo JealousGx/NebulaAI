@@ -9,7 +9,7 @@ import {
 
 import { prefixedId } from "@/lib/id"
 
-import { endpoint } from "./endpoints"
+import { model } from "./model"
 
 export const modelApiKey = mysqlTable(
 	"model_api_key",
@@ -17,9 +17,9 @@ export const modelApiKey = mysqlTable(
 		id: varchar("id", { length: 36 })
 			.primaryKey()
 			.$defaultFn(() => prefixedId("mdl_api")),
-		endpointId: varchar("endpoint_id", { length: 36 })
+		modelId: varchar("model_id", { length: 36 })
 			.notNull()
-			.references(() => endpoint.id, { onDelete: "cascade" }),
+			.references(() => model.id, { onDelete: "cascade" }),
 		encryptedKey: text("encrypted_key").notNull(),
 		createdAt: timestamp("created_at", { fsp: 3 }).defaultNow().notNull(),
 		updatedAt: timestamp("updated_at", { fsp: 3 })
@@ -28,15 +28,13 @@ export const modelApiKey = mysqlTable(
 			.notNull(),
 	},
 	(table) => ({
-		endpointIdIdx: uniqueIndex("model_api_key_endpointId_idx").on(
-			table.endpointId,
-		),
+		modelIdIdx: uniqueIndex("model_api_key_modelId_idx").on(table.modelId),
 	}),
 )
 
 export const modelApiKeyRelations = relations(modelApiKey, ({ one }) => ({
-	endpoint: one(endpoint, {
-		fields: [modelApiKey.endpointId],
-		references: [endpoint.id],
+	model: one(model, {
+		fields: [modelApiKey.modelId],
+		references: [model.id],
 	}),
 }))

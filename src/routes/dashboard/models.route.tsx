@@ -13,34 +13,34 @@ import {
 	SelectValue,
 } from "@/components/ui/select"
 
-import { CreateEndpointModal } from "@/features/dashboard/endpoint/create-modal"
-import { EndpointsTable } from "@/features/dashboard/endpoints-table"
+import { CreateModelModal } from "@/features/dashboard/model/create-modal"
+import { ModelsTable } from "@/features/dashboard/models-table"
 
 import {
-	closeCreateEndpointModal,
-	openCreateEndpointModal,
-	useCreateEndpointModalState,
-} from "@/hooks/modals/use-create-endpoint-modal"
+	closeCreateModelModal,
+	openCreateModelModal,
+	useCreateModelModalState,
+} from "@/hooks/modals/use-create-model-modal"
 
 import { useTRPC } from "@/integrations/trpc/react"
 
-import type { Endpoint } from "@/types"
+import type { Model } from "@/types"
 
-export const Route = createFileRoute("/dashboard/endpoints")({
+export const Route = createFileRoute("/dashboard/models")({
 	beforeLoad: ({ context }) =>
 		context.queryClient.ensureQueryData(
-			context.trpc.endpoints.list.queryOptions(),
+			context.trpc.models.list.queryOptions({}),
 		),
 	component: RouteComponent,
 })
 
 function RouteComponent() {
-	const { isOpen } = useCreateEndpointModalState()
+	const { isOpen } = useCreateModelModalState()
 	const trpc = useTRPC()
 
-	const { data: endpoints } = useQuery({
-		...trpc.endpoints.list.queryOptions(),
-		select: (data) => data satisfies Endpoint[],
+	const { data: models } = useQuery({
+		...trpc.models.list.queryOptions({}),
+		select: (data) => data satisfies Model[],
 	})
 
 	return (
@@ -51,17 +51,17 @@ function RouteComponent() {
 				className="sticky top-0 z-30 glass border-b border-border px-8 py-4 flex items-center justify-between"
 			>
 				<div>
-					<h1 className="text-2xl mb-1">Endpoints</h1>
+					<h1 className="text-2xl mb-1">Models</h1>
 					<p className="text-sm text-muted-foreground">
-						Manage your AI model proxy endpoints
+						Manage your AI model proxy models
 					</p>
 				</div>
 				<Button
-					onClick={openCreateEndpointModal}
+					onClick={openCreateModelModal}
 					className="bg-primary text-primary-foreground hover:shadow-lg transition-all"
 				>
 					<Plus className="h-4 w-4 mr-2" />
-					Create New Endpoint
+					Create New Model
 				</Button>
 			</motion.header>
 
@@ -76,7 +76,7 @@ function RouteComponent() {
 						<div className="flex-1 relative">
 							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 							<Input
-								placeholder="Search endpoints..."
+								placeholder="Search models..."
 								className="pl-10 bg-background/40 border-border"
 							/>
 						</div>
@@ -106,10 +106,10 @@ function RouteComponent() {
 					</div>
 				</motion.div>
 
-				<EndpointsTable endpoints={endpoints} />
+				<ModelsTable models={models} />
 			</main>
 
-			<CreateEndpointModal isOpen={isOpen} onClose={closeCreateEndpointModal} />
+			<CreateModelModal isOpen={isOpen} onClose={closeCreateModelModal} />
 		</div>
 	)
 }

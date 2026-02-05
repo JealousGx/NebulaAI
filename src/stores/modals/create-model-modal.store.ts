@@ -1,19 +1,19 @@
-import { atom } from "nanostores";
+import { atom } from "nanostores"
 
-import type { ModalState } from ".";
+import type { ModalState } from "."
 
 const initialState: ModalState = {
 	isOpen: false,
 	params: null,
 	modalId: null,
-};
+}
 
-export const $modalState = atom<ModalState>(initialState);
+export const $modalState = atom<ModalState>(initialState)
 
 /**
  * Open modal with optional params and a modal identifier.
  */
-export function openCreateEndpointModal<T = unknown>(
+export function openCreateModelModal<T = unknown>(
 	params?: T,
 	modalId: string | null = null,
 ) {
@@ -21,18 +21,18 @@ export function openCreateEndpointModal<T = unknown>(
 		isOpen: true,
 		params: params ?? null,
 		modalId,
-	});
+	})
 }
 
 /**
  * Close modal and reset state
  */
-export function closeCreateEndpointModal() {
+export function closeCreateModelModal() {
 	$modalState.set({
 		isOpen: false,
 		params: null,
 		modalId: null,
-	});
+	})
 }
 
 /**
@@ -42,10 +42,10 @@ export function toggleModal<T = unknown>(
 	params?: T,
 	modalId: string | null = null,
 ) {
-	const current = $modalState.get();
+	const current = $modalState.get()
 	$modalState.set({
 		isOpen: !current.isOpen,
 		params: current.isOpen ? null : (params ?? null),
 		modalId: current.isOpen ? null : modalId,
-	});
+	})
 }
